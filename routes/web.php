@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 // Global helper to get all anime data
 function getAnimeData() {
@@ -73,12 +75,46 @@ Route::get('/history', function () {
     return view('history', compact('animeList'));
 });
 
-// 7. Auth Login Page Route
+// 7. Auth Login Routes
 Route::get('/login', function () {
+    if (Auth::check()) {
+        return redirect('/admin/dashboard');
+    }
     return view('auth.login');
+})->name('login');
+
+Route::post('/login', function (Request $request) {
+    $credentials = $request->validate([
+        'email' => ['required', 'email'],
+        'password' => ['required'],
+    ]);
+
+    if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        $request->session()->regenerate();
+        return redirect()->intended('/admin/dashboard');
+    }
+
+    return back()->withErrors([
+        'email' => 'The provided credentials do not match our records.',
+    ])->onlyInput('email');
 });
 
-// 8. Auth Register Page Route
-Route::get('/register', function () {
-    return view('auth.register');
+Route::post('/logout', function (Request $request) {
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect('/login');
+})->name('logout');
+
+// 8. Protected Admin Dashboard Route
+Route::middleware('auth')->group(function () {
+    Route::get('/admin/dashboard', function () {
+        $animeList = getAnimeData();
+        $totalAnime = count($animeList);
+        $totalEpisodes = array_sum(array_column($animeList, 'episodes'));
+        $genres = config('anime.genres', []);
+        $totalGenres = count($genres);
+        
+        return view('admin.dashboard', compact('animeList', 'totalAnime', 'totalEpisodes', 'totalGenres'));
+    });
 });
