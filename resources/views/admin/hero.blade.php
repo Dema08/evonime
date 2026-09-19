@@ -104,9 +104,9 @@
 
                         <!-- Edit Landscape Banner & Synopsis Button -->
                         <button type="button" 
-                                onclick="window.openHeroEditModal('{{ $anime['slug'] }}', '{{ addslashes($anime['title']) }}', '{{ addslashes($anime['banner']) }}', '{{ addslashes($anime['synopsis']) }}')" 
+                                onclick="window.openHeroEditModal('{{ $anime['slug'] }}', '{{ addslashes($anime['title']) }}', '{{ addslashes($anime['banner']) }}', '{{ addslashes($anime['synopsis']) }}', '{{ addslashes($anime['trailer_url'] ?? '') }}')" 
                                 class="px-3 py-1.5 bg-[#141414] hover:bg-[#E63946] text-white border-2 border-white text-[11px] font-black rounded-xl transition-all shadow-[2px_2px_0px_#FFFFFF]">
-                            ✏️ FOTO & DESKRIPSI
+                            ✏️ FOTO, VIDEO & DESKRIPSI
                         </button>
                     </div>
 
@@ -117,14 +117,14 @@
     </div>
 
 
-    <!-- EDIT FOTO LANDSCAPE & DESKRIPSI MODAL -->
+    <!-- EDIT FOTO LANDSCAPE, VIDEO TRAILER & DESKRIPSI MODAL -->
     <div id="hero-edit-modal" class="fixed inset-0 z-50 hidden overflow-y-auto p-4 md:p-6 bg-black/85 backdrop-blur-md flex items-center justify-center">
         <div class="relative w-full max-w-2xl bg-[#1A1A1A] border-2 border-white rounded-2xl shadow-[8px_8px_0px_#FFFFFF] p-6 space-y-4 text-[#F5F0E6] my-auto max-h-[90vh] flex flex-col">
             
             <!-- Sticky Header -->
             <div class="flex items-center justify-between border-b-2 border-white pb-3 flex-shrink-0">
                 <h3 class="text-xl font-black text-white flex items-center gap-2" style="font-family: 'Anton', sans-serif;">
-                    <span>✏️</span> EDIT FOTO BANNER LANDSCAPE & DESKRIPSI
+                    <span>✏️</span> EDIT FOTO BANNER, VIDEO TRAILER & DESKRIPSI
                 </h3>
                 <button type="button" onclick="window.closeHeroEditModal()" class="px-2.5 py-1 bg-[#141414] border-2 border-white text-white font-black text-xs rounded-lg hover:bg-[#E63946]">
                     ✕
@@ -140,10 +140,33 @@
                     <input type="text" id="modal-anime-title" readonly class="w-full bg-[#141414] border-2 border-white text-zinc-400 font-bold text-sm rounded-xl px-4 py-2.5 focus:outline-none">
                 </div>
 
-                <div>
+                <!-- Choice: Photo vs Video Trailer -->
+                <div class="p-3.5 bg-[#141414] border-2 border-white rounded-xl space-y-2">
+                    <label class="block text-xs font-black uppercase text-[#E63946]">TIPE MEDIA HERO BANNER (PILIH SALAH SATU)</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center gap-2 p-2.5 bg-[#1A1A1A] border-2 border-white rounded-lg cursor-pointer hover:bg-zinc-800 transition-colors">
+                            <input type="radio" name="modal_media_type" value="image" id="media-type-image" onchange="window.switchModalMediaType('image')" class="w-4 h-4 accent-[#E63946]" checked>
+                            <span class="text-xs font-black text-white">🖼️ FOTO LANDSCAPE</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 bg-[#1A1A1A] border-2 border-white rounded-lg cursor-pointer hover:bg-zinc-800 transition-colors">
+                            <input type="radio" name="modal_media_type" value="video" id="media-type-video" onchange="window.switchModalMediaType('video')" class="w-4 h-4 accent-amber-400">
+                            <span class="text-xs font-black text-amber-400">🎬 VIDEO TRAILER</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Input Foto (Shown when Image selected) -->
+                <div id="modal-photo-container">
                     <label class="block text-xs font-black uppercase text-white mb-1">URL Foto Landscape Banner (16:9 Wallpaper)</label>
-                    <input type="url" id="modal-banner-url" required placeholder="https://..." class="w-full bg-[#141414] border-2 border-white text-white font-bold text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#E63946]">
-                    <p class="text-[11px] text-zinc-400 mt-1 font-bold">Gunakan URL foto anime berukuran landscape horizontal yang tajam untuk tampilan Hero Banner.</p>
+                    <input type="url" id="modal-banner-url" placeholder="https://..." class="w-full bg-[#141414] border-2 border-white text-white font-bold text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#E63946]">
+                    <p class="text-[11px] text-zinc-400 mt-1 font-bold">Gunakan URL foto anime berukuran landscape horizontal yang tajam.</p>
+                </div>
+
+                <!-- Input Video (Shown when Video selected) -->
+                <div id="modal-video-container" class="hidden">
+                    <label class="block text-xs font-black uppercase text-amber-400 mb-1">URL Trailer Video (YouTube Embed / Direct MP4 Video)</label>
+                    <input type="url" id="modal-trailer-url" placeholder="https://www.youtube.com/embed/94vOIbO8Zio..." class="w-full bg-[#141414] border-2 border-white text-white font-bold text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-amber-400">
+                    <p class="text-[11px] text-zinc-400 mt-1 font-bold">Masukkan URL Embed YouTube (contoh: <code class="text-amber-400">https://www.youtube.com/embed/VIDEO_ID...</code>) atau URL direct file video .mp4.</p>
                 </div>
 
                 <div>
@@ -181,6 +204,19 @@
             filterHeroGrid('top'); // Default to top weekly rating >= 9.5
         });
 
+        // Media Type Switcher
+        window.switchModalMediaType = function(type) {
+            const photoContainer = document.getElementById('modal-photo-container');
+            const videoContainer = document.getElementById('modal-video-container');
+            if (type === 'video') {
+                photoContainer.classList.add('hidden');
+                videoContainer.classList.remove('hidden');
+            } else {
+                photoContainer.classList.remove('hidden');
+                videoContainer.classList.add('hidden');
+            }
+        };
+
         // 1. Grid Filtering Logic
         window.filterHeroGrid = function(mode) {
             const btns = ['top', 'active', 'all'];
@@ -211,8 +247,8 @@
             });
         };
 
-        // 2. Modal Edit Landscape & Synopsis
-        window.openHeroEditModal = function(slug, title, bannerUrl, synopsis) {
+        // 2. Modal Edit Landscape, Trailer & Synopsis
+        window.openHeroEditModal = function(slug, title, bannerUrl, synopsis, trailerUrl) {
             const modal = document.getElementById('hero-edit-modal');
             const customDetails = JSON.parse(localStorage.getItem('evonime_custom_hero_details') || '{}');
 
@@ -221,10 +257,21 @@
 
             const finalBanner = customDetails[slug]?.banner || bannerUrl;
             const finalSynopsis = customDetails[slug]?.synopsis || synopsis;
+            const finalTrailer = customDetails[slug]?.trailer || trailerUrl || '';
+            const finalMediaType = customDetails[slug]?.media_type || (finalTrailer ? 'video' : 'image');
 
             document.getElementById('modal-banner-url').value = finalBanner;
             document.getElementById('modal-synopsis').value = finalSynopsis;
+            document.getElementById('modal-trailer-url').value = finalTrailer;
             document.getElementById('modal-banner-preview').src = finalBanner;
+
+            if (finalMediaType === 'video') {
+                document.getElementById('media-type-video').checked = true;
+                window.switchModalMediaType('video');
+            } else {
+                document.getElementById('media-type-image').checked = true;
+                window.switchModalMediaType('image');
+            }
 
             modal.classList.remove('hidden');
 
@@ -242,9 +289,11 @@
             const slug = document.getElementById('modal-anime-slug').value;
             const banner = document.getElementById('modal-banner-url').value;
             const synopsis = document.getElementById('modal-synopsis').value;
+            const trailer = document.getElementById('modal-trailer-url').value;
+            const mediaType = document.querySelector('input[name="modal_media_type"]:checked')?.value || 'image';
 
             const customDetails = JSON.parse(localStorage.getItem('evonime_custom_hero_details') || '{}');
-            customDetails[slug] = { banner, synopsis };
+            customDetails[slug] = { media_type: mediaType, banner, synopsis, trailer };
             localStorage.setItem('evonime_custom_hero_details', JSON.stringify(customDetails));
 
             // Also enable hero checkbox for this anime if not checked
@@ -253,7 +302,7 @@
 
             window.saveHeroSettings();
             window.closeHeroEditModal();
-            if (window.showToast) window.showToast(`Banner & Deskripsi untuk "${slug}" berhasil diperbarui!`);
+            if (window.showToast) window.showToast(`Hero Media (${mediaType.toUpperCase()}) untuk "${slug}" berhasil disimpan!`);
         };
 
         // 3. Save Hero Settings

@@ -5,18 +5,30 @@
     <!-- Hero Slides Wrapper -->
     <div id="hero-slides" class="relative w-full h-full">
         @foreach($items as $index => $anime)
-            <div data-slide="{{ $index }}" data-slug="{{ $anime['slug'] }}" class="hero-slide absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none' }}">
+            <div data-slide="{{ $index }}" data-slug="{{ $anime['slug'] }}" data-trailer="{{ $anime['trailer_url'] ?? '' }}" class="hero-slide absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none' }}">
                 
                 <!-- Background Image & Gradients (Dark Manga Spread Style) -->
                 <div class="absolute inset-0 w-full h-full overflow-hidden">
+                    <!-- Image Poster -->
                     <img src="{{ $anime['banner'] }}" onerror="this.src='https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1600&auto=format&fit=crop'" alt="{{ $anime['title'] }}" class="hero-banner-img w-full h-full object-cover object-center transform scale-105 transition-transform duration-10000 ease-linear filter contrast-125 brightness-90">
                     
+                    <!-- Background Video Container (YouTube Embed / MP4 Video) -->
+                    @if(!empty($anime['trailer_url']))
+                        <div class="hero-video-container absolute inset-0 w-full h-full overflow-hidden opacity-0 transition-opacity duration-1000 pointer-events-none z-10">
+                            @if(str_contains($anime['trailer_url'], 'youtube.com') || str_contains($anime['trailer_url'], 'youtu.be'))
+                                <iframe data-src="{{ $anime['trailer_url'] }}" class="hero-video-iframe w-[160%] h-[160%] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 object-cover pointer-events-none border-0" allow="autoplay; encrypted-media"></iframe>
+                            @else
+                                <video class="hero-video-player w-full h-full object-cover" loop muted playsinline data-src="{{ $anime['trailer_url'] }}"></video>
+                            @endif
+                        </div>
+                    @endif
+
                     <!-- Manga Panel Gradients -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-[#0D0D0D]/70 to-transparent"></div>
-                    <div class="absolute inset-0 bg-gradient-to-r from-[#0D0D0D]/95 via-[#0D0D0D]/40 to-transparent"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-[#0D0D0D]/70 to-transparent z-15"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#0D0D0D]/95 via-[#0D0D0D]/40 to-transparent z-15"></div>
                     
                     <!-- Halftone Overlay -->
-                    <div class="absolute inset-0 halftone-bg opacity-30 pointer-events-none"></div>
+                    <div class="absolute inset-0 halftone-bg opacity-30 pointer-events-none z-15"></div>
                 </div>
 
                 <!-- Content Info -->
@@ -68,6 +80,16 @@
                                 </svg>
                                 READ & WATCH NOW
                             </a>
+
+                            @if(!empty($anime['trailer_url']))
+                                <button type="button" onclick="window.toggleHeroTrailer(this)" class="hero-play-trailer-btn manga-button px-4 py-2.5 sm:px-6 sm:py-3.5 text-xs sm:text-sm font-extrabold rounded-xl text-amber-400 border-amber-400/40 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-amber-400 fill-current" viewBox="0 0 24 24">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                                    </svg>
+                                    <span>PLAY TRAILER</span>
+                                </button>
+                            @endif
+
                             <button type="button" data-slug="{{ $anime['slug'] }}" onclick="window.toggleWatchlist('{{ $anime['slug'] }}', this)" class="manga-button px-4 py-2.5 sm:px-6 sm:py-3.5 text-xs sm:text-sm font-extrabold rounded-xl text-white flex items-center gap-2">
                                 <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
