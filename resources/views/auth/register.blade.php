@@ -1,6 +1,6 @@
 <x-app-layout title="Register - EVONIME">
 
-    <div class="relative min-h-[80vh] flex items-center justify-center py-12 px-4">
+    <div class="relative min-h-[80vh] flex items-center justify-center pt-28 pb-16 px-4">
         
         <!-- Background Overlay -->
         <div class="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">

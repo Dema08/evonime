@@ -1,15 +1,15 @@
 @props(['items' => []])
 
-<div id="hero-carousel" class="relative w-full h-[560px] md:h-[640px] overflow-hidden bg-[#0D0D0D] border-b-2 border-[#F5F0E6] group speed-lines">
+<div id="hero-carousel" class="relative w-full h-screen max-h-[760px] overflow-hidden bg-[#0D0D0D] border-b-2 border-[#F5F0E6] group speed-lines">
     
     <!-- Hero Slides Wrapper -->
     <div id="hero-slides" class="relative w-full h-full">
         @foreach($items as $index => $anime)
-            <div data-slide="{{ $index }}" class="hero-slide absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none' }}">
+            <div data-slide="{{ $index }}" data-slug="{{ $anime['slug'] }}" class="hero-slide absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none' }}">
                 
                 <!-- Background Image & Gradients (Dark Manga Spread Style) -->
                 <div class="absolute inset-0 w-full h-full overflow-hidden">
-                    <img src="{{ $anime['banner'] }}" alt="{{ $anime['title'] }}" class="w-full h-full object-cover object-center transform scale-105 transition-transform duration-10000 ease-linear filter contrast-125 brightness-90">
+                    <img src="{{ $anime['banner'] }}" onerror="this.src='https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1600&auto=format&fit=crop'" alt="{{ $anime['title'] }}" class="hero-banner-img w-full h-full object-cover object-center transform scale-105 transition-transform duration-10000 ease-linear filter contrast-125 brightness-90">
                     
                     <!-- Manga Panel Gradients -->
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-[#0D0D0D]/70 to-transparent"></div>
@@ -21,7 +21,7 @@
 
                 <!-- Content Info -->
                 <div class="relative z-20 max-w-[1400px] mx-auto h-full px-6 flex items-center">
-                    <div class="max-w-2xl space-y-4 pt-12 md:pt-0">
+                    <div class="max-w-2xl space-y-4">
                         
                         <!-- Trending Rank Badge -->
                         @if(!empty($anime['trending_rank']))
@@ -56,7 +56,7 @@
                         </div>
 
                         <!-- Synopsis -->
-                        <p class="text-sm md:text-base text-zinc-300 line-clamp-2 md:line-clamp-3 leading-relaxed max-w-xl font-medium bg-[#141414]/90 p-3 border-l-4 border-[#E63946] border-2 border-[#F5F0E6] backdrop-blur-sm shadow-[3px_3px_0px_#F5F0E6]">
+                        <p class="hero-synopsis text-sm md:text-base text-zinc-300 line-clamp-2 md:line-clamp-3 leading-relaxed max-w-xl font-medium bg-[#141414]/90 p-3 border-l-4 border-[#E63946] border-2 border-[#F5F0E6] backdrop-blur-sm shadow-[3px_3px_0px_#F5F0E6]">
                             {{ $anime['synopsis'] }}
                         </p>
 

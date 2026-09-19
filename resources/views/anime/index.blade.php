@@ -1,6 +1,6 @@
 <x-app-layout title="Explore Anime - EVONIME">
 
-    <div class="max-w-[1400px] mx-auto px-4 md:px-6 space-y-8 mt-4">
+    <div class="max-w-[1400px] mx-auto px-4 md:px-6 space-y-8 mt-4 pt-24 md:pt-28">
         
         <!-- Page Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800 pb-6">

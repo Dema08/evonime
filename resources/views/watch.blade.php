@@ -1,6 +1,6 @@
 <x-app-layout :title="'Watch ' . $anime['title'] . ' Episode ' . $episodeNum . ' - EVONIME'">
 
-    <div class="max-w-[1400px] mx-auto px-4 md:px-6 space-y-6 mt-2 text-[#F5F0E6]">
+    <div class="max-w-[1400px] mx-auto px-4 md:px-6 space-y-6 mt-2 pt-24 md:pt-28 text-[#F5F0E6]">
         
         <!-- Breadcrumb & Title Bar -->
         <div class="flex flex-wrap items-center justify-between gap-4 text-xs font-bold text-zinc-400">

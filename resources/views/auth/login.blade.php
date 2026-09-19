@@ -1,6 +1,6 @@
 <x-app-layout title="Admin Login - EVONIME">
 
-    <div class="relative min-h-[80vh] flex items-center justify-center py-12 px-4 speed-lines">
+    <div class="relative min-h-[80vh] flex items-center justify-center pt-28 pb-16 px-4 speed-lines">
         
         <!-- Cinematic Manga Background Overlay -->
         <div class="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">

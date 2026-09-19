@@ -10,7 +10,7 @@
         </div>
 
         <!-- Detail Content Container -->
-        <div class="relative z-10 max-w-[1400px] mx-auto px-4 md:px-6 pt-8 pb-12">
+        <div class="relative z-10 max-w-[1400px] mx-auto px-4 md:px-6 pt-24 md:pt-28 pb-12">
             <div class="flex flex-col md:flex-row items-start gap-8">
                 
                 <!-- Poster Image Card -->

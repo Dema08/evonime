@@ -22,7 +22,7 @@
     <x-mobile-nav />
 
     <!-- Main Content Container -->
-    <main class="flex-grow pb-24 md:pb-12 pt-18 md:pt-22">
+    <main class="flex-grow pb-24 md:pb-12">
         {{ $slot }}
     </main>
 

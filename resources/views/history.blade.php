@@ -1,6 +1,6 @@
 <x-app-layout title="Watch History - EVONIME">
 
-    <div class="max-w-[1400px] mx-auto px-4 md:px-6 space-y-8 mt-4 text-[#F5F0E6]">
+    <div class="max-w-[1400px] mx-auto px-4 md:px-6 space-y-8 mt-4 pt-24 md:pt-28 text-[#F5F0E6]">
         
         <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#F5F0E6] pb-6">
