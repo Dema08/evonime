@@ -96,7 +96,7 @@
             <div>
                 <h2 class="text-xl md:text-2xl font-extrabold text-white flex items-center gap-2">
                     <span class="w-1.5 h-5 bg-red-600 rounded-full inline-block"></span>
-                    Episodes ({{ count($anime['episodes_list'] ?? []) }})
+                    Episodes ({{ is_countable($anime['episodes'] ?? null) ? count($anime['episodes']) : ($anime['episodes'] ?? 0) }})
                 </h2>
                 <p class="text-xs text-zinc-400 mt-0.5">Select an episode to start streaming</p>
             </div>
@@ -116,7 +116,7 @@
 
         <!-- Episode Cards Grid -->
         <div id="episode-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            @foreach($anime['episodes_list'] as $ep)
+                        @foreach($anime['episodes_list'] ?? [] as $ep)
                 <div class="episode-item-wrapper" data-title="{{ strtolower($ep['title']) }}" data-ep="{{ $ep['number'] }}">
                     <x-episode-card :animeSlug="$anime['slug']" :episode="$ep" />
                 </div>
