@@ -131,6 +131,29 @@ return [
     |
     */
 
-    'serializable_classes' => false,
+    'serializable_classes' => [
+        App\Models\Anime::class,
+        App\Models\Episode::class,
+        App\Models\Genre::class,
+        App\Models\WatchHistory::class,
+        App\Models\StreamSource::class,
+        App\Models\Subtitle::class,
+        App\Models\User::class,
+        App\Models\ContentSource::class,
+        App\Models\StreamToken::class,
+        App\Enums\VideoStatus::class,
+        App\Enums\VideoQuality::class,
+        App\Enums\SubtitleLanguage::class,
+        Illuminate\Database\Eloquent\Collection::class,
+        Illuminate\Support\Collection::class,
+        Illuminate\Pagination\LengthAwarePaginator::class,
+        Illuminate\Pagination\Paginator::class,
+        Carbon\Carbon::class,
+        Carbon\CarbonImmutable::class,
+        Carbon\CarbonPeriod::class,
+        DateTime::class,
+        DateTimeImmutable::class,
+        DateTimeZone::class,
+    ],
 
 ];

@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,12 +15,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // User bawaan lama dipertahankan agar email admin tetap ada.
         User::updateOrCreate(
             ['email' => 'admin@evonime.com'],
-            [
-                'name' => 'Admin',
-                'password' => Hash::make('Admin12345'),
-            ]
+            ['name' => 'Admin']
         );
+
+        $this->call([
+            UserSeeder::class,
+            GenreSeeder::class,
+            AnimeSeeder::class,
+        ]);
     }
 }
+

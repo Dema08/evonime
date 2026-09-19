@@ -60,6 +60,33 @@ return [
             'report' => false,
         ],
 
+        /*
+        |--------------------------------------------------------------------------
+        | Disk "streams" — video master/HLS (local <-> S3 gampang diganti)
+        |--------------------------------------------------------------------------
+        | Asumsi: default local agar bisa jalan tanpa AWS. Untuk produksi S3,
+        | cukup set STREAM_DISK=s3 di .env, maka disk ini memakai driver s3.
+        | Video TIDAK PERNAH di public/ — hanya diakses via signed URL.
+        */
+        'streams' => env('STREAM_DISK', 'local') === 's3' ? [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'url' => env('AWS_URL'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'visibility' => 'private',
+            'throw' => true,
+        ] : [
+            'driver' => 'local',
+            'root' => storage_path('app/streams'),
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => false,
+        ],
+
     ],
 
     /*
