@@ -35,6 +35,26 @@ class AnimeService
         return $anime;
     }
 
+    public function getEpisodesBySlug(string $slug)
+    {
+        $anime = $this->animes->findBySlug($slug);
+        if (! $anime) {
+            return null;
+        }
+
+        return $anime->episodes;
+    }
+
+    public function getRelatedBySlug(string $slug, int $limit = 6)
+    {
+        $anime = $this->animes->findBySlug($slug);
+        if (! $anime) {
+            return null;
+        }
+
+        return $this->animes->getRelated($anime->id, $limit);
+    }
+
     public function getCatalog(array $filters, int $perPage = 15)
     {
         return $this->animes->getPaginatedPublished($perPage, $filters);

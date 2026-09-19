@@ -55,4 +55,15 @@ class WatchHistoryRepository extends BaseRepository implements WatchHistoryRepos
     {
         return $this->model->newQuery()->where('user_id', $userId)->where('episode_id', $episodeId)->first();
     }
+
+    /** Hapus 1 riwayat tontonan user. */
+    public function deleteHistory(int $userId, int $episodeId): bool
+    {
+        $deleted = $this->model->newQuery()->where('user_id', $userId)->where('episode_id', $episodeId)->delete() > 0;
+        if ($deleted) {
+            Cache::forget("user:{$userId}:continue");
+            for ($p = 1; $p <= 5; $p++) Cache::forget("user:{$userId}:history:page:{$p}");
+        }
+        return $deleted;
+    }
 }

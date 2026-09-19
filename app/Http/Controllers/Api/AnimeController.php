@@ -3,45 +3,87 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\CatalogRequest;
+use App\Http\Requests\Api\SearchRequest;
+use App\Http\Resources\AnimeListResource;
 use App\Http\Resources\AnimeResource;
+use App\Http\Resources\EpisodeListResource;
+use App\Http\Responses\ApiResponse;
 use App\Services\AnimeService;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class AnimeController extends Controller
 {
-    public function __construct(protected readonly AnimeService $service) {}
+    public function __construct(
+        protected readonly AnimeService $animeService,
+    ) {}
 
-    public function index(Request $request)
+    /**
+     * Get paginated catalogue of anime with filters.
+     */
+    public function index(CatalogRequest $request): JsonResponse
     {
-        $data = $this->service->getCatalog($request->only(['status', 'type', 'year', 'genre']), 15);
-        return AnimeResource::collection($data);
+        $perPage = (int) $request->input('per_page', 15);
+        $filters = $request->validated();
+        $paginated = $this->animeService->getCatalog($filters, $perPage);
+
+        return ApiResponse::paginated($paginated, AnimeListResource::class, 'Katalog anime berhasil dimuat.');
     }
 
-    public function home(AnimeService $service)
+    /**
+     * Get single anime detail with loaded relations.
+     */
+    public function show(string $slug): JsonResponse
     {
-        $data = $service->getHomePageData();
-        return response()->json(['data' => [
-            'featured' => AnimeResource::collection($data['featured']),
-            'latest' => AnimeResource::collection($data['latest']),
-            'popular' => AnimeResource::collection($data['popular']),
-        ]]);
+        $anime = $this->animeService->getAnimeDetail($slug);
+
+        if (! $anime) {
+            return ApiResponse::error('Anime tidak ditemukan.', Response::HTTP_NOT_FOUND);
+        }
+
+        return ApiResponse::success(AnimeResource::make($anime), 'Detail anime berhasil dimuat.');
     }
 
-    public function show(string $slug, AnimeService $service)
+    /**
+     * Get all episodes for a specific anime.
+     */
+    public function episodes(string $slug): JsonResponse
     {
-        $anime = $service->getAnimeDetail($slug);
-        abort_if(! $anime, 404);
-        return new AnimeResource($anime);
+        $episodes = $this->animeService->getEpisodesBySlug($slug);
+
+        if ($episodes === null) {
+            return ApiResponse::error('Anime tidak ditemukan.', Response::HTTP_NOT_FOUND);
+        }
+
+        return ApiResponse::success(EpisodeListResource::collection($episodes), 'Daftar episode berhasil dimuat.');
     }
 
-    public function search(Request $request, AnimeService $service)
+    /**
+     * Get related anime recommendations for a specific anime.
+     */
+    public function related(string $slug): JsonResponse
     {
-        $request->validate([
-            'q' => 'required|string|min:1|max:100',
-            'page' => 'sometimes|integer|min:1',
-        ]);
+        $related = $this->animeService->getRelatedBySlug($slug, 6);
+
+        if ($related === null) {
+            return ApiResponse::error('Anime tidak ditemukan.', Response::HTTP_NOT_FOUND);
+        }
+
+        return ApiResponse::success(AnimeListResource::collection($related), 'Rekomendasi anime terkait berhasil dimuat.');
+    }
+
+    /**
+     * Search anime by keyword.
+     */
+    public function search(SearchRequest $request): JsonResponse
+    {
+        $q = (string) $request->input('q');
+        $perPage = (int) $request->input('per_page', 15);
         $page = (int) $request->input('page', 1);
-        return AnimeResource::collection($service->searchAnime($request->string('q')->toString(), 15, $page));
+
+        $results = $this->animeService->searchAnime($q, $perPage, $page);
+
+        return ApiResponse::paginated($results, AnimeListResource::class, 'Hasil pencarian anime berhasil dimuat.');
     }
 }
-

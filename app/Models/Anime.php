@@ -64,9 +64,13 @@ class Anime extends Model
 
     public function scopeSearch(Builder $q, string $keyword): Builder
     {
-        // MySQL FULLTEXT boolean mode; fallback LIKE jika keyword pendek (<4 char).
-        if (mb_strlen($keyword) < 4) {
-            return $q->where('title', 'like', "%{$keyword}%");
+        // SQLite fallback atau keyword pendek (<4 char).
+        if (\Illuminate\Support\Facades\DB::getDriverName() === 'sqlite' || mb_strlen($keyword) < 4) {
+            return $q->where(function (Builder $sub) use ($keyword) {
+                $sub->where('title', 'like', "%{$keyword}%")
+                    ->orWhere('title_alternative', 'like', "%{$keyword}%")
+                    ->orWhere('synopsis', 'like', "%{$keyword}%");
+            });
         }
 
         return $q->whereFullText(['title', 'title_alternative', 'synopsis'], $keyword);

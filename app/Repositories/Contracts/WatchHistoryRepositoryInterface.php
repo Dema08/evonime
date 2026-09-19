@@ -22,4 +22,7 @@ interface WatchHistoryRepositoryInterface extends RepositoryInterface
 
     /** Ambil 1 baris progres user-episode. */
     public function findProgress(int $userId, int $episodeId): ?WatchHistory;
+
+    /** Hapus 1 riwayat tontonan user. */
+    public function deleteHistory(int $userId, int $episodeId): bool;
 }

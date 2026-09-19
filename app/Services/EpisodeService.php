@@ -6,6 +6,8 @@ use App\Jobs\TrackWatchProgress;
 use App\Models\Episode;
 use App\Repositories\Contracts\AnimeRepositoryInterface;
 use App\Repositories\Contracts\EpisodeRepositoryInterface;
+use App\Repositories\Contracts\StreamSourceRepositoryInterface;
+use App\Repositories\Contracts\SubtitleRepositoryInterface;
 use App\Repositories\Contracts\WatchHistoryRepositoryInterface;
 use Illuminate\Support\Facades\Cache;
 
@@ -15,7 +17,24 @@ class EpisodeService
         protected readonly EpisodeRepositoryInterface $episodes,
         protected readonly AnimeRepositoryInterface $animes,
         protected readonly WatchHistoryRepositoryInterface $histories,
+        protected readonly StreamSourceRepositoryInterface $sources,
+        protected readonly SubtitleRepositoryInterface $subtitles,
     ) {}
+
+    public function getLatestEpisodes(int $limit = 10)
+    {
+        return $this->episodes->getLatestReady($limit);
+    }
+
+    public function getSources(int $episodeId)
+    {
+        return $this->sources->getActiveByEpisode($episodeId);
+    }
+
+    public function getSubtitles(int $episodeId)
+    {
+        return $this->subtitles->getByEpisode($episodeId);
+    }
 
     public function getEpisodeDetail(int $id): ?Episode
     {

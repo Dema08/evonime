@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class AnimeResource extends JsonResource
+class AnimeListResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
@@ -14,7 +14,6 @@ class AnimeResource extends JsonResource
             'title' => $this->title,
             'title_alternative' => $this->title_alternative,
             'slug' => $this->slug,
-            'synopsis' => $this->synopsis,
             'type' => $this->type,
             'status' => $this->status,
             'release_date' => $this->release_date?->format('Y-m-d'),
@@ -29,8 +28,6 @@ class AnimeResource extends JsonResource
             'views_count' => $this->views_count,
             'is_featured' => (bool) $this->is_featured,
             'genres' => GenreResource::collection($this->whenLoaded('genres')),
-            'episodes' => EpisodeListResource::collection($this->whenLoaded('episodes')),
-            'related' => AnimeListResource::collection($this->whenLoaded('related')),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

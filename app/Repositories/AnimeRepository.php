@@ -68,9 +68,16 @@ class AnimeRepository extends BaseRepository implements AnimeRepositoryInterface
         $hash = md5(mb_strtolower($keyword).'|'.$perPage.'|'.$page);
         return Cache::remember('search:'.$hash, 300, function () use ($keyword, $perPage, $page): LengthAwarePaginator {
             $q = $this->model->newQuery()->published()->with(['genres:id,name,slug'])
-                ->select(['id','title','slug','type','status','year','rating','poster_path','views_count']);
-            if (mb_strlen($keyword) >= 4) $q->whereFullText(['title','title_alternative','synopsis'], $keyword);
-            else $q->where('title', 'like', $keyword.'%');
+                ->select(['id', 'title', 'slug', 'type', 'status', 'year', 'rating', 'poster_path', 'views_count']);
+            if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite' && mb_strlen($keyword) >= 4) {
+                $q->whereFullText(['title', 'title_alternative', 'synopsis'], $keyword);
+            } else {
+                $q->where(function ($sub) use ($keyword) {
+                    $sub->where('title', 'like', "%{$keyword}%")
+                        ->orWhere('title_alternative', 'like', "%{$keyword}%")
+                        ->orWhere('synopsis', 'like', "%{$keyword}%");
+                });
+            }
             return $q->orderByDesc('views_count')->paginate($perPage, ['*'], 'page', $page);
         });
     }

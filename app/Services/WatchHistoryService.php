@@ -20,6 +20,11 @@ class WatchHistoryService
         return (int) min(100, round($h->progress_seconds / $h->duration_seconds * 100));
     }
 
+    public function deleteHistory(int $userId, int $episodeId): bool
+    {
+        return $this->histories->deleteHistory($userId, $episodeId);
+    }
+
     public function invalidateCache(int $userId): void
     {
         Cache::forget("user:{$userId}:continue");
