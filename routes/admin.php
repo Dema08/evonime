@@ -14,6 +14,24 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Alias agar /admin/dashboard tetap jalan (dulu URL ini yang dipakai).
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
+    // Dedicated Hero Management Page
+    Route::get('hero', function () {
+        $animeList = getAnimeData();
+        $heroItems = array_values(array_filter($animeList, fn($a) => !empty($a['trending_rank'])));
+        usort($heroItems, fn($a, $b) => ($a['trending_rank'] ?? 99) <=> ($b['trending_rank'] ?? 99));
+
+        return view('admin.hero', compact('animeList', 'heroItems'));
+    })->name('hero');
+
+    // Dedicated Top-Rated Management Page
+    Route::get('top-rated', function () {
+        $animeList = getAnimeData();
+        $topRatedItems = array_values(array_filter($animeList, fn($a) => isset($a['rating']) && $a['rating'] >= 9.5));
+        usort($topRatedItems, fn($a, $b) => $b['rating'] <=> $a['rating']);
+
+        return view('admin.top-rated', compact('animeList', 'topRatedItems'));
+    })->name('top-rated');
+
     // Anime + toggle featured
     Route::patch('animes/{anime}/toggle-featured', [AnimeController::class, 'toggleFeatured'])->name('animes.toggle-featured');
     Route::resource('animes', AnimeController::class);

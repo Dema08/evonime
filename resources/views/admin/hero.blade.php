@@ -52,7 +52,7 @@
                 @php
                     $isHero = !empty($anime['trending_rank']);
                     $rankNum = $anime['trending_rank'] ?? 99;
-                    $isTopRated = isset($anime['rating']) && $anime['rating'] >= 9.5;
+                    $isTopRated = (isset($anime['rating']) && $anime['rating'] >= 8.5) || !empty($anime['trending_rank']);
                 @endphp
                 <div class="hero-card-box flex flex-col justify-between p-4 bg-[#1A1A1A] border-2 border-white shadow-[4px_4px_0px_#FFFFFF] rounded-2xl relative transition-all group space-y-3" 
                      data-slug="{{ $anime['slug'] }}"
@@ -222,14 +222,17 @@
             const btns = ['top', 'active', 'all'];
             btns.forEach(b => {
                 const btn = document.getElementById(`filter-btn-${b}`);
-                if (b === mode) {
-                    btn.className = 'hero-filter-btn manga-button-primary px-4 py-2 text-xs font-black rounded-xl text-white';
-                } else {
-                    btn.className = 'hero-filter-btn manga-button px-4 py-2 text-xs font-black rounded-xl text-white';
+                if (btn) {
+                    if (b === mode) {
+                        btn.className = 'hero-filter-btn manga-button-primary px-4 py-2 text-xs font-black rounded-xl text-white';
+                    } else {
+                        btn.className = 'hero-filter-btn manga-button px-4 py-2 text-xs font-black rounded-xl text-white';
+                    }
                 }
             });
 
             const cards = document.querySelectorAll('.hero-card-box');
+            let visibleCount = 0;
             cards.forEach(card => {
                 const isTop = card.getAttribute('data-top-rated') === '1';
                 const chk = card.querySelector('.hero-toggle-checkbox');
@@ -237,14 +240,22 @@
 
                 if (mode === 'top' && isTop) {
                     card.classList.remove('hidden');
+                    visibleCount++;
                 } else if (mode === 'active' && isActive) {
                     card.classList.remove('hidden');
+                    visibleCount++;
                 } else if (mode === 'all') {
                     card.classList.remove('hidden');
+                    visibleCount++;
                 } else {
                     card.classList.add('hidden');
                 }
             });
+
+            // Fallback: If top filter mode results in 0 visible cards, automatically fallback to showing all cards!
+            if (mode === 'top' && visibleCount === 0) {
+                cards.forEach(card => card.classList.remove('hidden'));
+            }
         };
 
         // 2. Modal Edit Landscape, Trailer & Synopsis

@@ -7,6 +7,47 @@ use Illuminate\Support\Facades\Auth;
 // Global helper to get all anime data
 if (! function_exists('getAnimeData')) {
     function getAnimeData() {
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('animes') && \App\Models\Anime::count() > 0) {
+                $dbAnimes = \App\Models\Anime::with('genres')->get();
+                $configAnimes = config('anime.anime', []);
+                $configMap = collect($configAnimes)->keyBy('slug');
+
+                $mapped = [];
+                foreach ($dbAnimes as $index => $a) {
+                    $configItem = $configMap->get($a->slug, []);
+                    $mapped[] = [
+                        'id' => $a->id,
+                        'slug' => $a->slug,
+                        'title' => $a->title,
+                        'japanese_title' => $a->title_alternative ?? $a->title,
+                        'poster' => $a->poster_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($a->poster_path) : ($configItem['poster'] ?? 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800&auto=format&fit=crop'),
+                        'banner' => $a->banner_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($a->banner_path) : ($configItem['banner'] ?? 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=1600&auto=format&fit=crop'),
+                        'trailer_url' => $configItem['trailer_url'] ?? null,
+                        'rating' => (float)($a->rating ?? 9.0),
+                        'year' => (int)($a->year ?? 2024),
+                        'type' => strtoupper($a->type ?? 'TV'),
+                        'episodes' => (int)($a->total_episodes ?? 12),
+                        'status' => ucfirst($a->status ?? 'ongoing'),
+                        'genres' => $a->genres->pluck('name')->all() ?: ($configItem['genres'] ?? ['Action', 'Fantasy']),
+                        'synopsis' => $a->synopsis,
+                        'trending_rank' => $a->is_featured ? ($index + 1) : ($configItem['trending_rank'] ?? null),
+                        'latest_ep' => 'EP ' . ($a->total_episodes ?? 12),
+                        'latest_date' => 'Recently',
+                        'schedule_day' => $configItem['schedule_day'] ?? 'SAT',
+                        'schedule_time' => $configItem['schedule_time'] ?? '23:30',
+                        'continue_progress' => $configItem['continue_progress'] ?? 50,
+                        'continue_ep' => $configItem['continue_ep'] ?? 1,
+                        'studio' => $a->studio ?? 'Studio',
+                        'quality' => 'HD',
+                        'sub' => true,
+                        'dub' => true,
+                    ];
+                }
+                if (!empty($mapped)) return $mapped;
+            }
+        } catch (\Throwable $e) {}
+
         return config('anime.anime', []);
     }
 }

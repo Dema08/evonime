@@ -20,10 +20,18 @@
 
         <!-- Sidebar Navigation Menu -->
         <nav class="space-y-2 text-xs font-black uppercase">
-            <div class="text-[10px] text-zinc-500 font-mono tracking-widest pt-2">CHAPTER 01</div>
+            <div class="text-[10px] text-zinc-500 font-mono tracking-widest pt-2">CHAPTER 01 // OVERVIEW & HERO</div>
             <a href="/admin" class="flex items-center gap-3 p-3 {{ request()->routeIs('admin.dashboard') ? 'bg-[#E63946] text-white' : 'bg-[#141414] text-[#F5F0E6] hover:bg-[#E63946] hover:text-white' }} border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] transition-colors">
                 <span>◆</span> DASHBOARD
             </a>
+            <a href="/admin/hero" class="flex items-center gap-3 p-3 {{ request()->is('admin/hero*') ? 'bg-[#E63946] text-white' : 'bg-[#141414] text-[#F5F0E6] hover:bg-[#E63946] hover:text-white' }} border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] transition-colors">
+                <span>★</span> HERO BANNER
+            </a>
+            <a href="/admin/top-rated" class="flex items-center gap-3 p-3 {{ request()->is('admin/top-rated*') ? 'bg-[#E63946] text-white' : 'bg-[#141414] text-[#F5F0E6] hover:bg-[#E63946] hover:text-white' }} border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] transition-colors">
+                <span>🏆</span> RATING TERTINGGI
+            </a>
+
+            <div class="text-[10px] text-zinc-500 font-mono tracking-widest pt-2">CHAPTER 02 // KATALOG</div>
             <a href="/admin/animes" class="flex items-center gap-3 p-3 {{ request()->routeIs('admin.animes.*') ? 'bg-[#E63946] text-white' : 'bg-[#141414] text-[#F5F0E6] hover:bg-[#E63946] hover:text-white' }} border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] transition-colors">
                 <span>▣</span> ANIME
             </a>
