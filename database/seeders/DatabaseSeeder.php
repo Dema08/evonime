@@ -15,12 +15,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User bawaan lama dipertahankan agar email admin tetap ada.
-        User::updateOrCreate(
-            ['email' => 'admin@evonime.com'],
-            ['name' => 'Admin']
-        );
-
         $this->call([
             UserSeeder::class,
             GenreSeeder::class,
