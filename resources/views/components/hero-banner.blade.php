@@ -1,20 +1,22 @@
 @props(['items' => []])
 
-<div id="hero-carousel" class="relative w-full h-[520px] md:h-[600px] overflow-hidden bg-[#070707] group">
+<div id="hero-carousel" class="relative w-full h-[560px] md:h-[640px] overflow-hidden bg-[#0D0D0D] border-b-2 border-[#F5F0E6] group speed-lines">
     
     <!-- Hero Slides Wrapper -->
     <div id="hero-slides" class="relative w-full h-full">
         @foreach($items as $index => $anime)
             <div data-slide="{{ $index }}" class="hero-slide absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none' }}">
                 
-                <!-- Background Image & Gradients -->
+                <!-- Background Image & Gradients (Dark Manga Spread Style) -->
                 <div class="absolute inset-0 w-full h-full overflow-hidden">
-                    <img src="{{ $anime['banner'] }}" alt="{{ $anime['title'] }}" class="w-full h-full object-cover object-center transform scale-105 transition-transform duration-10000 ease-linear">
+                    <img src="{{ $anime['banner'] }}" alt="{{ $anime['title'] }}" class="w-full h-full object-cover object-center transform scale-105 transition-transform duration-10000 ease-linear filter contrast-125 brightness-90">
                     
-                    <!-- Multi-directional dark gradients for readability -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-[#070707] via-[#070707]/60 to-transparent"></div>
-                    <div class="absolute inset-0 bg-gradient-to-r from-[#070707] via-[#070707]/80 to-transparent"></div>
-                    <div class="absolute inset-0 bg-gradient-to-b from-[#070707]/40 via-transparent to-[#070707]"></div>
+                    <!-- Manga Panel Gradients -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-[#0D0D0D]/70 to-transparent"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#0D0D0D]/95 via-[#0D0D0D]/40 to-transparent"></div>
+                    
+                    <!-- Halftone Overlay -->
+                    <div class="absolute inset-0 halftone-bg opacity-30 pointer-events-none"></div>
                 </div>
 
                 <!-- Content Info -->
@@ -23,60 +25,54 @@
                         
                         <!-- Trending Rank Badge -->
                         @if(!empty($anime['trending_rank']))
-                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-violet-600/30 border border-violet-500/50 backdrop-blur-md rounded-full text-violet-300 text-xs font-bold tracking-wide uppercase">
-                                <span class="w-2 h-2 rounded-full bg-violet-400 animate-pulse"></span>
-                                #{{ $anime['trending_rank'] }} TRENDING
+                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-[#E63946] text-white border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] text-xs font-black tracking-widest uppercase transform -rotate-1">
+                                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                                CHAPTER 0{{ $anime['trending_rank'] }} / FEATURED SPREAD
                             </div>
                         @endif
 
-                        <!-- Anime Title -->
-                        <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-none drop-shadow-lg">
+                        <!-- Anime Title (Manga Font) -->
+                        <h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-[#F5F0E6] tracking-tight leading-none drop-shadow-[3px_3px_0px_#111111]" style="font-family: 'Anton', sans-serif;">
                             {{ $anime['title'] }}
                         </h1>
 
                         <!-- Anime Metadata -->
-                        <div class="flex flex-wrap items-center gap-3 text-xs md:text-sm font-medium text-zinc-300">
-                            <span class="flex items-center gap-1 font-bold text-amber-400 bg-amber-400/10 px-2.5 py-0.5 rounded border border-amber-400/20">
-                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                </svg>
-                                {{ number_format($anime['rating'], 1) }}
+                        <div class="flex flex-wrap items-center gap-3 text-xs md:text-sm font-bold text-zinc-300">
+                            <span class="flex items-center gap-1 font-black text-[#0D0D0D] bg-amber-400 px-3 py-1 border-2 border-[#F5F0E6] shadow-[2px_2px_0px_#F5F0E6]">
+                                ★ {{ number_format($anime['rating'], 1) }}
                             </span>
-                            <span>•</span>
-                            <span>{{ $anime['year'] }}</span>
-                            <span>•</span>
-                            <span class="bg-zinc-800/80 px-2 py-0.5 rounded text-xs font-semibold">{{ $anime['type'] }}</span>
-                            <span>•</span>
-                            <span>{{ $anime['episodes'] }} Episodes</span>
+                            <span class="bg-[#1A1A1A] text-[#F5F0E6] px-2.5 py-1 border-2 border-[#F5F0E6] text-xs font-bold">{{ $anime['year'] }}</span>
+                            <span class="bg-[#E63946] text-white px-2.5 py-1 border-2 border-[#F5F0E6] text-xs font-bold">{{ $anime['type'] }}</span>
+                            <span class="bg-[#1A1A1A] text-[#F5F0E6] px-2.5 py-1 border-2 border-[#F5F0E6] text-xs font-bold">{{ $anime['episodes'] }} EPISODES</span>
                         </div>
 
                         <!-- Genre Tags -->
                         <div class="flex flex-wrap gap-2 pt-1">
                             @foreach($anime['genres'] as $genre)
-                                <span class="text-xs px-2.5 py-1 bg-zinc-900/80 border border-zinc-800 text-zinc-300 rounded-md">
-                                    {{ $genre }}
+                                <span class="text-xs font-extrabold px-3 py-1 bg-[#1A1A1A] text-[#F5F0E6] border-2 border-[#F5F0E6] shadow-[2px_2px_0px_#F5F0E6]">
+                                    #{{ strtoupper($genre) }}
                                 </span>
                             @endforeach
                         </div>
 
                         <!-- Synopsis -->
-                        <p class="text-sm md:text-base text-zinc-400 line-clamp-2 md:line-clamp-3 leading-relaxed max-w-xl">
+                        <p class="text-sm md:text-base text-zinc-300 line-clamp-2 md:line-clamp-3 leading-relaxed max-w-xl font-medium bg-[#141414]/90 p-3 border-l-4 border-[#E63946] border-2 border-[#F5F0E6] backdrop-blur-sm shadow-[3px_3px_0px_#F5F0E6]">
                             {{ $anime['synopsis'] }}
                         </p>
 
                         <!-- Action Buttons -->
                         <div class="flex flex-wrap items-center gap-4 pt-4">
-                            <a href="/watch/{{ $anime['slug'] }}/1" class="px-7 py-3 bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(124,58,237,0.5)] hover:shadow-[0_0_30px_rgba(124,58,237,0.8)] flex items-center gap-2 transform hover:scale-105">
+                            <a href="/watch/{{ $anime['slug'] }}/1" class="manga-button-primary px-8 py-3.5 text-sm rounded-lg flex items-center gap-2 text-white">
                                 <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                                     <path d="M8 5v14l11-7z"/>
                                 </svg>
-                                Watch Now
+                                READ & WATCH NOW
                             </a>
-                            <button type="button" data-slug="{{ $anime['slug'] }}" onclick="window.toggleWatchlist('{{ $anime['slug'] }}', this)" class="px-6 py-3 bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 text-sm font-semibold rounded-full transition-all duration-300 flex items-center gap-2 hover:border-violet-500/50">
-                                <svg class="w-4.5 h-4.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+                            <button type="button" data-slug="{{ $anime['slug'] }}" onclick="window.toggleWatchlist('{{ $anime['slug'] }}', this)" class="manga-button px-6 py-3.5 text-sm rounded-lg text-[#F5F0E6] flex items-center gap-2">
+                                <svg class="w-4.5 h-4.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
                                 </svg>
-                                <span>Add to List</span>
+                                <span>ADD TO LIST</span>
                             </button>
                         </div>
 
@@ -94,20 +90,20 @@
             <!-- Indicators -->
             <div id="hero-dots" class="flex items-center gap-2">
                 @foreach($items as $index => $anime)
-                    <button type="button" data-dot="{{ $index }}" aria-label="Slide {{ $index + 1 }}" class="hero-dot h-2 rounded-full transition-all duration-300 {{ $index === 0 ? 'w-8 bg-violet-500 shadow-[0_0_10px_rgba(124,58,237,0.8)]' : 'w-2 bg-zinc-600 hover:bg-zinc-400' }}"></button>
+                    <button type="button" data-dot="{{ $index }}" aria-label="Slide {{ $index + 1 }}" class="hero-dot h-3 border-2 border-[#F5F0E6] transition-all duration-300 {{ $index === 0 ? 'w-10 bg-[#E63946] shadow-[2px_2px_0px_#F5F0E6]' : 'w-3 bg-[#1A1A1A] hover:bg-zinc-700' }}"></button>
                 @endforeach
             </div>
 
             <!-- Arrow Navigation -->
             <div class="flex items-center gap-2">
-                <button id="hero-prev" type="button" aria-label="Previous slide" class="p-2 text-zinc-400 hover:text-white bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 rounded-full transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                <button id="hero-prev" type="button" aria-label="Previous slide" class="p-2.5 text-[#F5F0E6] bg-[#1A1A1A] hover:bg-[#E63946] hover:text-white border-2 border-[#F5F0E6] shadow-[2px_2px_0px_#F5F0E6] rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
                     </svg>
                 </button>
-                <button id="hero-next" type="button" aria-label="Next slide" class="p-2 text-zinc-400 hover:text-white bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 rounded-full transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                <button id="hero-next" type="button" aria-label="Next slide" class="p-2.5 text-[#F5F0E6] bg-[#1A1A1A] hover:bg-[#E63946] hover:text-white border-2 border-[#F5F0E6] shadow-[2px_2px_0px_#F5F0E6] rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </button>
             </div>
