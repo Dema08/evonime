@@ -62,13 +62,13 @@
 
                         <!-- Action Buttons -->
                         <div class="flex flex-wrap items-center gap-4 pt-4">
-                            <a href="/watch/{{ $anime['slug'] }}/1" class="manga-button-primary px-8 py-3.5 text-sm rounded-lg flex items-center gap-2 text-white">
+                            <a href="/watch/{{ $anime['slug'] }}/1" class="manga-button-primary px-8 py-3.5 text-sm font-extrabold rounded-xl flex items-center gap-2.5 text-white">
                                 <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                                     <path d="M8 5v14l11-7z"/>
                                 </svg>
                                 READ & WATCH NOW
                             </a>
-                            <button type="button" data-slug="{{ $anime['slug'] }}" onclick="window.toggleWatchlist('{{ $anime['slug'] }}', this)" class="manga-button px-6 py-3.5 text-sm rounded-lg text-[#F5F0E6] flex items-center gap-2">
+                            <button type="button" data-slug="{{ $anime['slug'] }}" onclick="window.toggleWatchlist('{{ $anime['slug'] }}', this)" class="manga-button px-6 py-3.5 text-sm font-extrabold rounded-xl text-white flex items-center gap-2.5">
                                 <svg class="w-4.5 h-4.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
                                 </svg>

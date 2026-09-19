@@ -53,9 +53,9 @@ function initHeroCarousel() {
 
         dots.forEach((dot, i) => {
             if (i === index) {
-                dot.className = 'hero-dot h-2 rounded-full transition-all duration-300 w-8 bg-violet-500 shadow-[0_0_10px_rgba(124,58,237,0.8)]';
+                dot.className = 'hero-dot h-3 border-2 border-[#F5F0E6] transition-all duration-300 w-10 bg-[#E63946] shadow-[2px_2px_0px_#F5F0E6]';
             } else {
-                dot.className = 'hero-dot h-2 rounded-full transition-all duration-300 w-2 bg-zinc-600 hover:bg-zinc-400';
+                dot.className = 'hero-dot h-3 border-2 border-[#F5F0E6] transition-all duration-300 w-3 bg-[#1A1A1A] hover:bg-zinc-700';
             }
         });
 
@@ -175,10 +175,10 @@ function initSearchModal() {
         }
 
         resultsList.innerHTML = filtered.map(item => `
-            <a href="/anime/${item.slug}" class="flex items-center gap-3 p-2 rounded-xl bg-[#151515] hover:bg-violet-600/20 border border-zinc-800/80 hover:border-violet-500/50 transition-all group">
+            <a href="/anime/${item.slug}" class="flex items-center gap-3 p-2 rounded-xl bg-[#151515] hover:bg-red-600/20 border border-zinc-800/80 hover:border-red-500/50 transition-all group">
                 <img src="${item.poster}" alt="${item.title}" class="w-10 h-14 object-cover rounded-lg flex-shrink-0">
                 <div class="flex-grow min-w-0">
-                    <h4 class="text-sm font-bold text-white group-hover:text-violet-400 truncate">${item.title}</h4>
+                    <h4 class="text-sm font-bold text-white group-hover:text-red-400 truncate">${item.title}</h4>
                     <p class="text-xs text-zinc-400 mt-0.5">${item.ep} • ${item.year}</p>
                 </div>
                 <div class="px-2 py-0.5 bg-black/60 text-amber-400 text-xs font-bold rounded flex-shrink-0">
@@ -206,7 +206,7 @@ function initScheduleTabs() {
 
         btns.forEach(btn => {
             if (btn.getAttribute('data-schedule-tab') === day) {
-                btn.className = 'schedule-tab-btn px-5 py-2 text-xs md:text-sm font-bold rounded-xl transition-all duration-200 bg-violet-600 text-white shadow-[0_0_15px_rgba(124,58,237,0.5)]';
+                btn.className = 'schedule-tab-btn px-5 py-2 text-xs md:text-sm font-bold rounded-xl transition-all duration-200 bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]';
             } else {
                 btn.className = 'schedule-tab-btn px-5 py-2 text-xs md:text-sm font-bold rounded-xl transition-all duration-200 bg-[#151515] text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-800';
             }
@@ -231,7 +231,7 @@ window.filterExplore = function(type) {
 
     btns.forEach(btn => {
         if (btn.getAttribute('data-filter') === type) {
-            btn.className = 'explore-tab-btn px-4 py-2 text-xs font-bold rounded-xl transition-all bg-violet-600 text-white shadow-[0_0_15px_rgba(124,58,237,0.5)]';
+            btn.className = 'explore-tab-btn px-4 py-2 text-xs font-bold rounded-xl transition-all bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]';
         } else {
             btn.className = 'explore-tab-btn px-4 py-2 text-xs font-bold rounded-xl transition-all bg-[#1A1A1A] text-zinc-300 hover:text-white border border-zinc-800';
         }
@@ -343,11 +343,11 @@ window.toggleWatchlist = function(slug, btn) {
     if (idx > -1) {
         list.splice(idx, 1);
         window.showToast('Removed from your Watchlist');
-        if (btn) btn.classList.remove('bg-violet-600', 'text-white');
+        if (btn) btn.classList.remove('bg-red-600', 'text-white');
     } else {
         list.push(slug);
         window.showToast('Added to your Watchlist!');
-        if (btn) btn.classList.add('bg-violet-600', 'text-white');
+        if (btn) btn.classList.add('bg-red-600', 'text-white');
     }
 
     localStorage.setItem('evonime_watchlist', JSON.stringify(list));
@@ -409,7 +409,7 @@ window.selectServer = function(num, btn) {
     document.querySelectorAll('.server-btn').forEach(b => {
         b.className = 'server-btn px-3 py-1.5 bg-[#1A1A1A] hover:bg-zinc-800 text-zinc-300 text-xs font-bold rounded-lg border border-zinc-800 transition-all';
     });
-    if (btn) btn.className = 'server-btn px-3 py-1.5 bg-violet-600 text-white text-xs font-bold rounded-lg transition-all border border-violet-500 shadow-md';
+    if (btn) btn.className = 'server-btn px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded-lg transition-all border border-red-500 shadow-md';
     window.showToast(`Switched to Server ${num}`);
 };
 
@@ -439,9 +439,9 @@ window.showToast = function(msg) {
     if (!container) return;
 
     const toast = document.createElement('div');
-    toast.className = 'px-4 py-3 bg-[#151515] border border-violet-500/60 text-white text-xs font-bold rounded-xl shadow-2xl backdrop-blur-md flex items-center gap-2 transform translate-y-4 opacity-0 transition-all duration-300 pointer-events-auto';
+    toast.className = 'px-4 py-3 bg-[#151515] border border-red-500/60 text-white text-xs font-bold rounded-xl shadow-2xl backdrop-blur-md flex items-center gap-2 transform translate-y-4 opacity-0 transition-all duration-300 pointer-events-auto';
     toast.innerHTML = `
-        <span class="w-2 h-2 rounded-full bg-violet-400"></span>
+        <span class="w-2 h-2 rounded-full bg-red-400"></span>
         <span>${msg}</span>
     `;
 

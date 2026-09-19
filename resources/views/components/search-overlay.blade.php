@@ -5,7 +5,7 @@
         
         <!-- Search Input Bar -->
         <div class="relative p-4 border-b border-zinc-800/80 flex items-center gap-3">
-            <svg class="w-5 h-5 text-violet-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
             <input id="search-input" 
@@ -24,7 +24,7 @@
             <!-- Popular Searches Suggestions -->
             <div id="popular-searches-section">
                 <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                     </svg>
                     Popular Searches
@@ -33,7 +33,7 @@
                     @foreach(['Solo Leveling', 'One Piece', 'Jujutsu Kaisen', 'Demon Slayer', 'Frieren', 'Bleach', 'Naruto'] as $pop)
                         <button type="button" 
                                 onclick="window.setSearchQuery('{{ $pop }}')" 
-                                class="px-3 py-1.5 bg-[#1A1A1A] hover:bg-violet-600/30 border border-zinc-800 hover:border-violet-500/50 text-zinc-300 hover:text-white text-xs font-semibold rounded-lg transition-all">
+                                class="px-3 py-1.5 bg-[#1A1A1A] hover:bg-red-600/30 border border-zinc-800 hover:border-red-500/50 text-zinc-300 hover:text-white text-xs font-semibold rounded-lg transition-all">
                             {{ $pop }}
                         </button>
                     @endforeach
@@ -44,7 +44,7 @@
             <div id="search-results-section">
                 <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3 flex items-center justify-between">
                     <span>Results</span>
-                    <span id="results-count" class="text-violet-400 font-normal"></span>
+                    <span id="results-count" class="text-red-400 font-normal"></span>
                 </h4>
                 <div id="search-results-list" class="space-y-2">
                     <!-- Dynamic JS Items will be injected here -->

@@ -88,43 +88,57 @@
 }
 
 .manga-button {
-  background-color: #1A1A1A;
-  color: #F5F0E6;
-  border: 2px solid #F5F0E6;
-  box-shadow: 3px 3px 0px #F5F0E6;
-  font-weight: 800;
-  transition: all 0.15s ease;
+  background-color: #161616;
+  color: #FFFFFF;
+  border: 2.5px solid #FFFFFF;
+  box-shadow: 4px 4px 0px #FFFFFF;
+  border-radius: 12px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .manga-button:hover {
   transform: translateY(-2px);
-  box-shadow: 5px 5px 0px #F5F0E6;
-  background-color: #252525;
+  box-shadow: 6px 6px 0px #FFFFFF;
+  background-color: #222222;
+  color: #FFFFFF;
 }
 
 .manga-button:active {
-  transform: translateY(1px);
-  box-shadow: 1px 1px 0px #F5F0E6;
+  transform: translateY(2px);
+  box-shadow: 2px 2px 0px #FFFFFF;
 }
 
 .manga-button-primary {
   background-color: #E63946;
   color: #FFFFFF;
-  border: 2px solid #F5F0E6;
-  box-shadow: 3px 3px 0px #F5F0E6;
-  font-weight: 800;
-  transition: all 0.15s ease;
+  border: 2.5px solid #FFFFFF;
+  box-shadow: 4px 4px 0px #FFFFFF;
+  border-radius: 12px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .manga-button-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 5px 5px 0px #F5F0E6;
-  background-color: #C52233;
+  box-shadow: 6px 6px 0px #FFFFFF;
+  background-color: #D62828;
+  color: #FFFFFF;
 }
 
 .manga-button-primary:active {
-  transform: translateY(1px);
-  box-shadow: 1px 1px 0px #F5F0E6;
+  transform: translateY(2px);
+  box-shadow: 2px 2px 0px #FFFFFF;
 }
 
 /* Halftone Pattern (Dark) */

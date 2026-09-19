@@ -20,22 +20,22 @@
         <!-- Right Side Actions -->
         <div class="flex items-center gap-4">
             <!-- Search Icon Button -->
-            <button id="search-trigger-btn" type="button" aria-label="Search" class="p-2.5 text-[#F5F0E6] bg-[#1A1A1A] hover:bg-[#E63946] hover:text-white border-2 border-[#F5F0E6] shadow-[2px_2px_0px_#F5F0E6] rounded-lg transition-all duration-150 transform hover:-translate-y-0.5">
+            <button id="search-trigger-btn" type="button" aria-label="Search" class="p-2.5 text-white bg-[#161616] hover:bg-[#E63946] hover:text-white border-2 border-white shadow-[3px_3px_0px_#FFFFFF] rounded-xl transition-all duration-150 transform hover:-translate-y-0.5">
                 <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
             </button>
 
             <!-- Watchlist Shortcut -->
-            <a href="/watchlist" title="My Watchlist" class="p-2.5 text-[#F5F0E6] bg-[#1A1A1A] hover:bg-[#E63946] hover:text-white border-2 border-[#F5F0E6] shadow-[2px_2px_0px_#F5F0E6] rounded-lg transition-all duration-150 transform hover:-translate-y-0.5 relative">
+            <a href="/watchlist" title="My Watchlist" class="p-2.5 text-white bg-[#161616] hover:bg-[#E63946] hover:text-white border-2 border-white shadow-[3px_3px_0px_#FFFFFF] rounded-xl transition-all duration-150 transform hover:-translate-y-0.5 relative">
                 <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
                 </svg>
-                <span id="watchlist-badge" class="hidden absolute -top-2 -right-2 w-5 h-5 bg-[#E63946] text-[10px] font-extrabold text-white rounded-full border border-[#F5F0E6] flex items-center justify-center">0</span>
+                <span id="watchlist-badge" class="hidden absolute -top-2 -right-2 w-5 h-5 bg-[#E63946] text-[10px] font-extrabold text-white rounded-full border-2 border-white flex items-center justify-center">0</span>
             </a>
 
             <!-- Login Button -->
-            <a href="/login" class="px-5 py-2 text-xs font-black tracking-wider text-[#F5F0E6] bg-[#1A1A1A] hover:bg-[#E63946] hover:text-white border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] rounded-lg transition-all duration-150 transform hover:-translate-y-0.5">
+            <a href="/login" class="manga-button px-5 py-2.5 text-xs font-black tracking-wider text-white">
                 MEMBER LOGIN
             </a>
         </div>

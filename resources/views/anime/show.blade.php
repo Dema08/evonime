@@ -23,7 +23,7 @@
                     
                     <!-- Japanese Title Subheading -->
                     @if(!empty($anime['japanese_title']))
-                        <p class="text-xs font-semibold text-violet-400 tracking-wider uppercase">{{ $anime['japanese_title'] }}</p>
+                        <p class="text-xs font-semibold text-red-400 tracking-wider uppercase">{{ $anime['japanese_title'] }}</p>
                     @endif
 
                     <!-- Title -->
@@ -62,23 +62,23 @@
                     <!-- Extra Info Metadata -->
                     <div class="flex flex-wrap items-center justify-center md:justify-start gap-6 text-xs text-zinc-400 pt-2 border-t border-zinc-800/80">
                         <div><span class="text-zinc-500">Studio:</span> <span class="text-zinc-200 font-semibold">{{ $anime['studio'] ?? 'A-1 Pictures' }}</span></div>
-                        <div><span class="text-zinc-500">Quality:</span> <span class="text-violet-400 font-semibold">HD 1080p</span></div>
+                        <div><span class="text-zinc-500">Quality:</span> <span class="text-red-400 font-semibold">HD 1080p</span></div>
                         <div><span class="text-zinc-500">Audio:</span> <span class="text-zinc-200 font-semibold">Japanese (Original)</span></div>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-4">
-                        <a href="/watch/{{ $anime['slug'] }}/1" class="px-8 py-3.5 bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(124,58,237,0.6)] hover:shadow-[0_0_30px_rgba(124,58,237,0.9)] flex items-center gap-2 transform hover:scale-105">
+                        <a href="/watch/{{ $anime['slug'] }}/1" class="manga-button-primary px-8 py-3.5 text-sm font-extrabold rounded-xl flex items-center gap-2.5 text-white">
                             <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                                 <path d="M8 5v14l11-7z"/>
                             </svg>
-                            Watch Now (EP 1)
+                            <span>READ & WATCH NOW</span>
                         </a>
-                        <button type="button" onclick="window.toggleWatchlist('{{ $anime['slug'] }}', this)" class="px-6 py-3.5 bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 text-sm font-semibold rounded-full transition-all flex items-center gap-2">
-                            <svg class="w-4.5 h-4.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+                        <button type="button" onclick="window.toggleWatchlist('{{ $anime['slug'] }}', this)" class="manga-button px-6 py-3.5 text-sm font-extrabold rounded-xl flex items-center gap-2.5 text-white">
+                            <svg class="w-4.5 h-4.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
                             </svg>
-                            <span>Add to Watchlist</span>
+                            <span>ADD TO LIST</span>
                         </button>
                     </div>
 
@@ -95,7 +95,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
             <div>
                 <h2 class="text-xl md:text-2xl font-extrabold text-white flex items-center gap-2">
-                    <span class="w-1.5 h-5 bg-violet-600 rounded-full inline-block"></span>
+                    <span class="w-1.5 h-5 bg-red-600 rounded-full inline-block"></span>
                     Episodes ({{ count($anime['episodes_list'] ?? []) }})
                 </h2>
                 <p class="text-xs text-zinc-400 mt-0.5">Select an episode to start streaming</p>
@@ -107,7 +107,7 @@
                        type="text" 
                        placeholder="Search episode..." 
                        onkeyup="window.filterEpisodes(this.value)"
-                       class="w-full bg-[#151515] border border-zinc-800 text-white placeholder-zinc-500 text-xs rounded-xl pl-9 pr-3 py-2 focus:outline-none focus:border-violet-500">
+                       class="w-full bg-[#151515] border border-zinc-800 text-white placeholder-zinc-500 text-xs rounded-xl pl-9 pr-3 py-2 focus:outline-none focus:border-red-500">
                 <svg class="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
