@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSearchModal();
     initWatchlistBadge();
     initScheduleTabs();
+    applyCustomAdminState();
 });
 
 /* ==========================================
@@ -458,3 +459,59 @@ window.showToast = function(msg) {
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 };
+
+/* ==========================================
+   10. ADMIN STATE LIVE SYNC HELPER
+   ========================================== */
+function applyCustomAdminState() {
+    // 1. Sync Custom Ratings
+    try {
+        const savedRatings = JSON.parse(localStorage.getItem('evonime_custom_ratings') || 'null');
+        if (savedRatings) {
+            Object.keys(savedRatings).forEach(slug => {
+                const val = parseFloat(savedRatings[slug]).toFixed(1);
+                const badges = document.querySelectorAll(`[data-slug="${slug}"] .rating-value, [data-rating-slug="${slug}"]`);
+                badges.forEach(b => {
+                    b.textContent = `★ ${val}`;
+                });
+            });
+        }
+    } catch (e) {
+        console.warn('Error reading custom ratings', e);
+    }
+
+    // 2. Sync Custom Hero Banner & Custom Banner Images / Synopsis
+    try {
+        const savedHero = JSON.parse(localStorage.getItem('evonime_custom_hero') || 'null');
+        const savedHeroDetails = JSON.parse(localStorage.getItem('evonime_custom_hero_details') || 'null');
+
+        const slides = document.querySelectorAll('.hero-slide');
+        if (slides.length > 0 && savedHero) {
+            slides.forEach(slide => {
+                const link = slide.querySelector('a[href*="/watch/"]');
+                const href = link ? link.getAttribute('href') : '';
+                const parts = href.split('/');
+                const slug = parts[2] || '';
+
+                if (slug && !savedHero.hasOwnProperty(slug)) {
+                    slide.classList.add('hidden');
+                } else if (slug) {
+                    slide.classList.remove('hidden');
+                    if (savedHeroDetails && savedHeroDetails[slug]) {
+                        const img = slide.querySelector('img');
+                        if (img && savedHeroDetails[slug].banner) {
+                            img.src = savedHeroDetails[slug].banner;
+                        }
+                        const synP = slide.querySelector('p');
+                        if (synP && savedHeroDetails[slug].synopsis) {
+                            synP.textContent = savedHeroDetails[slug].synopsis;
+                        }
+                    }
+                }
+            });
+        }
+    } catch (e) {
+        console.warn('Error reading custom hero state', e);
+    }
+}
+

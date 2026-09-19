@@ -19,11 +19,24 @@
         </div>
 
         <!-- Sidebar Navigation Menu -->
-        <nav class="space-y-3 text-xs font-black uppercase">
+        <nav class="space-y-2 text-xs font-black uppercase">
             
-            <div class="text-[10px] text-zinc-500 font-mono tracking-widest pt-2">CHAPTER 01</div>
-            <a href="/admin/dashboard" class="flex items-center gap-3 p-3 bg-[#E63946] text-white border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6]">
-                <span>◆</span> DASHBOARD
+            <div class="text-[10px] text-zinc-500 font-mono tracking-widest pt-2 pb-1">PANEL NAVIGASI</div>
+            
+            <a href="/admin/dashboard" class="flex items-center gap-3 p-3 rounded-xl border-2 border-white transition-all {{ request()->is('admin/dashboard') ? 'bg-[#E63946] text-white shadow-[3px_3px_0px_#FFFFFF]' : 'bg-[#141414] text-white hover:bg-[#E63946]' }}">
+                <span>📊</span> DASHBOARD
+            </a>
+
+            <a href="/admin/hero" class="flex items-center gap-3 p-3 rounded-xl border-2 border-white transition-all {{ request()->is('admin/hero') ? 'bg-[#E63946] text-white shadow-[3px_3px_0px_#FFFFFF]' : 'bg-[#141414] text-white hover:bg-[#E63946]' }}">
+                <span>★</span> PENGATURAN HERO
+            </a>
+
+            <a href="/admin/top-rated" class="flex items-center gap-3 p-3 rounded-xl border-2 border-white transition-all {{ request()->is('admin/top-rated') ? 'bg-[#E63946] text-white shadow-[3px_3px_0px_#FFFFFF]' : 'bg-[#141414] text-white hover:bg-[#E63946]' }}">
+                <span>🏆</span> RATING TERTINGGI
+            </a>
+
+            <a href="/admin/anime" class="flex items-center gap-3 p-3 rounded-xl border-2 border-white transition-all {{ request()->is('admin/anime') ? 'bg-[#E63946] text-white shadow-[3px_3px_0px_#FFFFFF]' : 'bg-[#141414] text-white hover:bg-[#E63946]' }}">
+                <span>📋</span> KATALOG ANIME
             </a>
 
         </nav>

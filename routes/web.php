@@ -106,15 +106,47 @@ Route::post('/logout', function (Request $request) {
     return redirect('/login');
 })->name('logout');
 
-// 8. Protected Admin Dashboard Route
-Route::middleware('auth')->group(function () {
-    Route::get('/admin/dashboard', function () {
-        $animeList = getAnimeData();
-        $totalAnime = count($animeList);
-        $totalEpisodes = array_sum(array_column($animeList, 'episodes'));
-        $genres = config('anime.genres', []);
-        $totalGenres = count($genres);
-        
-        return view('admin.dashboard', compact('animeList', 'totalAnime', 'totalEpisodes', 'totalGenres'));
-    });
+// 8. Admin Routes
+Route::get('/admin', function () {
+    return redirect('/admin/dashboard');
 });
+
+Route::get('/admin/dashboard', function () {
+    $animeList = getAnimeData();
+    $totalAnime = count($animeList);
+    $totalEpisodes = array_sum(array_column($animeList, 'episodes'));
+    $genres = config('anime.genres', []);
+    $totalGenres = count($genres);
+
+    $heroItems = array_values(array_filter($animeList, fn($a) => !empty($a['trending_rank'])));
+    usort($heroItems, fn($a, $b) => ($a['trending_rank'] ?? 99) <=> ($b['trending_rank'] ?? 99));
+
+    $topRatedItems = array_values(array_filter($animeList, fn($a) => isset($a['rating']) && $a['rating'] >= 9.5));
+    usort($topRatedItems, fn($a, $b) => $b['rating'] <=> $a['rating']);
+
+    return view('admin.dashboard', compact('animeList', 'totalAnime', 'totalEpisodes', 'totalGenres', 'heroItems', 'topRatedItems'));
+})->name('admin.dashboard');
+
+// Dedicated Hero Management Page
+Route::get('/admin/hero', function () {
+    $animeList = getAnimeData();
+    $heroItems = array_values(array_filter($animeList, fn($a) => !empty($a['trending_rank'])));
+    usort($heroItems, fn($a, $b) => ($a['trending_rank'] ?? 99) <=> ($b['trending_rank'] ?? 99));
+
+    return view('admin.hero', compact('animeList', 'heroItems'));
+})->name('admin.hero');
+
+// Dedicated Top-Rated Anime Management Page
+Route::get('/admin/top-rated', function () {
+    $animeList = getAnimeData();
+    $topRatedItems = array_values(array_filter($animeList, fn($a) => isset($a['rating']) && $a['rating'] >= 9.5));
+    usort($topRatedItems, fn($a, $b) => $b['rating'] <=> $a['rating']);
+
+    return view('admin.top-rated', compact('animeList', 'topRatedItems'));
+})->name('admin.top-rated');
+
+// Dedicated Anime Catalog Management Page
+Route::get('/admin/anime', function () {
+    $animeList = getAnimeData();
+    return view('admin.anime', compact('animeList'));
+})->name('admin.anime');
