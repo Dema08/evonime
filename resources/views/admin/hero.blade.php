@@ -158,15 +158,15 @@
                 <!-- Input Foto (Shown when Image selected) -->
                 <div id="modal-photo-container">
                     <label class="block text-xs font-black uppercase text-white mb-1">URL Foto Landscape Banner (16:9 Wallpaper)</label>
-                    <input type="url" id="modal-banner-url" placeholder="https://..." class="w-full bg-[#141414] border-2 border-white text-white font-bold text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#E63946]">
+                    <input type="text" id="modal-banner-url" placeholder="https://..." class="w-full bg-[#141414] border-2 border-white text-white font-bold text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#E63946]">
                     <p class="text-[11px] text-zinc-400 mt-1 font-bold">Gunakan URL foto anime berukuran landscape horizontal yang tajam.</p>
                 </div>
 
                 <!-- Input Video (Shown when Video selected) -->
                 <div id="modal-video-container" class="hidden">
                     <label class="block text-xs font-black uppercase text-amber-400 mb-1">URL Trailer Video (YouTube Embed / Direct MP4 Video)</label>
-                    <input type="url" id="modal-trailer-url" placeholder="https://www.youtube.com/embed/94vOIbO8Zio..." class="w-full bg-[#141414] border-2 border-white text-white font-bold text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-amber-400">
-                    <p class="text-[11px] text-zinc-400 mt-1 font-bold">Masukkan URL Embed YouTube (contoh: <code class="text-amber-400">https://www.youtube.com/embed/VIDEO_ID...</code>) atau URL direct file video .mp4.</p>
+                    <input type="text" id="modal-trailer-url" placeholder="https://www.youtube.com/watch?v=94vOIbO8Zio..." class="w-full bg-[#141414] border-2 border-white text-white font-bold text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-amber-400">
+                    <p class="text-[11px] text-zinc-400 mt-1 font-bold">Masukkan URL Embed YouTube (contoh: <code class="text-amber-400">https://www.youtube.com/watch?v=VIDEO_ID</code>) atau URL direct file video .mp4.</p>
                 </div>
 
                 <div>
