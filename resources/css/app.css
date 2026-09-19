@@ -1,0 +1,86 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  
+  --color-dark-950: #070707;
+  --color-dark-900: #0B0B0B;
+  --color-dark-850: #101010;
+  
+  --color-card-900: #151515;
+  --color-card-800: #1A1A1A;
+  --color-card-700: #202020;
+  
+  --color-evo-violet: #7C3AED;
+  --color-evo-purple: #8B5CF6;
+  --color-evo-accent: #A855F7;
+}
+
+@layer base {
+  body {
+    background-color: #070707;
+    color: #FFFFFF;
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #070707;
+}
+::-webkit-scrollbar-thumb {
+  background: #202020;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #7C3AED;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Glassmorphism */
+.glass-nav {
+  background-color: rgba(7, 7, 7, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glass-card {
+  background-color: rgba(21, 21, 21, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Violet Glow */
+.glow-violet {
+  box-shadow: 0 0 25px -5px rgba(124, 58, 237, 0.4);
+}
+.glow-violet-sm {
+  box-shadow: 0 0 12px -2px rgba(124, 58, 237, 0.3);
+}
+
+/* Vignette Gradients */
+.hero-gradient {
+  background: linear-gradient(0deg, #070707 0%, rgba(7, 7, 7, 0.6) 40%, rgba(7, 7, 7, 0.2) 100%),
+              linear-gradient(90deg, #070707 0%, rgba(7, 7, 7, 0.8) 35%, rgba(7, 7, 7, 0) 70%);
+}
+
+.card-vignette {
+  background: linear-gradient(180deg, rgba(7,7,7,0) 40%, rgba(7,7,7,0.95) 100%);
+}
+
