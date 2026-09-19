@@ -20,25 +20,19 @@
 
         <!-- Sidebar Navigation Menu -->
         <nav class="space-y-2 text-xs font-black uppercase">
-            
-            <div class="text-[10px] text-zinc-500 font-mono tracking-widest pt-2 pb-1">PANEL NAVIGASI</div>
-            
-            <a href="/admin/dashboard" class="flex items-center gap-3 p-3 rounded-xl border-2 border-white transition-all {{ request()->is('admin/dashboard') ? 'bg-[#E63946] text-white shadow-[3px_3px_0px_#FFFFFF]' : 'bg-[#141414] text-white hover:bg-[#E63946]' }}">
-                <span>📊</span> DASHBOARD
+            <div class="text-[10px] text-zinc-500 font-mono tracking-widest pt-2">CHAPTER 01</div>
+            <a href="/admin" class="flex items-center gap-3 p-3 {{ request()->routeIs('admin.dashboard') ? 'bg-[#E63946] text-white' : 'bg-[#141414] text-[#F5F0E6] hover:bg-[#E63946] hover:text-white' }} border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] transition-colors">
+                <span>◆</span> DASHBOARD
             </a>
-
-            <a href="/admin/hero" class="flex items-center gap-3 p-3 rounded-xl border-2 border-white transition-all {{ request()->is('admin/hero') ? 'bg-[#E63946] text-white shadow-[3px_3px_0px_#FFFFFF]' : 'bg-[#141414] text-white hover:bg-[#E63946]' }}">
-                <span>★</span> PENGATURAN HERO
+            <a href="/admin/animes" class="flex items-center gap-3 p-3 {{ request()->routeIs('admin.animes.*') ? 'bg-[#E63946] text-white' : 'bg-[#141414] text-[#F5F0E6] hover:bg-[#E63946] hover:text-white' }} border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] transition-colors">
+                <span>▣</span> ANIME
             </a>
-
-            <a href="/admin/top-rated" class="flex items-center gap-3 p-3 rounded-xl border-2 border-white transition-all {{ request()->is('admin/top-rated') ? 'bg-[#E63946] text-white shadow-[3px_3px_0px_#FFFFFF]' : 'bg-[#141414] text-white hover:bg-[#E63946]' }}">
-                <span>🏆</span> RATING TERTINGGI
+            <a href="/admin/genres" class="flex items-center gap-3 p-3 {{ request()->routeIs('admin.genres.*') ? 'bg-[#E63946] text-white' : 'bg-[#141414] text-[#F5F0E6] hover:bg-[#E63946] hover:text-white' }} border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] transition-colors">
+                <span>◈</span> GENRES
             </a>
-
-            <a href="/admin/anime" class="flex items-center gap-3 p-3 rounded-xl border-2 border-white transition-all {{ request()->is('admin/anime') ? 'bg-[#E63946] text-white shadow-[3px_3px_0px_#FFFFFF]' : 'bg-[#141414] text-white hover:bg-[#E63946]' }}">
-                <span>📋</span> KATALOG ANIME
+            <a href="/admin/users" class="flex items-center gap-3 p-3 {{ request()->routeIs('admin.users.*') ? 'bg-[#E63946] text-white' : 'bg-[#141414] text-[#F5F0E6] hover:bg-[#E63946] hover:text-white' }} border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] transition-colors">
+                <span>●</span> USERS
             </a>
-
         </nav>
     </div>
 

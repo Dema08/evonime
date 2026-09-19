@@ -5,8 +5,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 // Global helper to get all anime data
-function getAnimeData() {
-    return config('anime.anime', []);
+if (! function_exists('getAnimeData')) {
+    function getAnimeData() {
+        return config('anime.anime', []);
+    }
 }
 
 // 1. Homepage Route
@@ -78,7 +80,10 @@ Route::get('/history', function () {
 // 7. Auth Login Routes
 Route::get('/login', function () {
     if (Auth::check()) {
-        return redirect('/admin/dashboard');
+        if (Auth::user()?->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect('/');
     }
     return view('auth.login');
 })->name('login');
@@ -89,9 +94,13 @@ Route::post('/login', function (Request $request) {
         'password' => ['required'],
     ]);
 
-    if (Auth::attempt($credentials, $request->boolean('remember'))) {
+    // Guard web eksplisit agar tidak tergantung default guard.
+    if (Auth::guard('web')->attempt($credentials, $request->boolean('remember'))) {
         $request->session()->regenerate();
-        return redirect()->intended('/admin/dashboard');
+        if ($request->user()?->isAdmin()) {
+            return redirect()->intended('/admin');
+        }
+        return redirect()->intended('/');
     }
 
     return back()->withErrors([
@@ -106,47 +115,3 @@ Route::post('/logout', function (Request $request) {
     return redirect('/login');
 })->name('logout');
 
-// 8. Admin Routes
-Route::get('/admin', function () {
-    return redirect('/admin/dashboard');
-});
-
-Route::get('/admin/dashboard', function () {
-    $animeList = getAnimeData();
-    $totalAnime = count($animeList);
-    $totalEpisodes = array_sum(array_column($animeList, 'episodes'));
-    $genres = config('anime.genres', []);
-    $totalGenres = count($genres);
-
-    $heroItems = array_values(array_filter($animeList, fn($a) => !empty($a['trending_rank'])));
-    usort($heroItems, fn($a, $b) => ($a['trending_rank'] ?? 99) <=> ($b['trending_rank'] ?? 99));
-
-    $topRatedItems = array_values(array_filter($animeList, fn($a) => isset($a['rating']) && $a['rating'] >= 9.5));
-    usort($topRatedItems, fn($a, $b) => $b['rating'] <=> $a['rating']);
-
-    return view('admin.dashboard', compact('animeList', 'totalAnime', 'totalEpisodes', 'totalGenres', 'heroItems', 'topRatedItems'));
-})->name('admin.dashboard');
-
-// Dedicated Hero Management Page
-Route::get('/admin/hero', function () {
-    $animeList = getAnimeData();
-    $heroItems = array_values(array_filter($animeList, fn($a) => !empty($a['trending_rank'])));
-    usort($heroItems, fn($a, $b) => ($a['trending_rank'] ?? 99) <=> ($b['trending_rank'] ?? 99));
-
-    return view('admin.hero', compact('animeList', 'heroItems'));
-})->name('admin.hero');
-
-// Dedicated Top-Rated Anime Management Page
-Route::get('/admin/top-rated', function () {
-    $animeList = getAnimeData();
-    $topRatedItems = array_values(array_filter($animeList, fn($a) => isset($a['rating']) && $a['rating'] >= 9.5));
-    usort($topRatedItems, fn($a, $b) => $b['rating'] <=> $a['rating']);
-
-    return view('admin.top-rated', compact('animeList', 'topRatedItems'));
-})->name('admin.top-rated');
-
-// Dedicated Anime Catalog Management Page
-Route::get('/admin/anime', function () {
-    $animeList = getAnimeData();
-    return view('admin.anime', compact('animeList'));
-})->name('admin.anime');
