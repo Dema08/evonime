@@ -75,7 +75,7 @@
         </div>
 
         <!-- Anime Grid Container (6 cols Desktop / 4 cols Tablet / 2 cols Mobile) -->
-        <div id="explore-anime-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div id="explore-anime-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-4">
             @foreach($animeList as $anime)
                 <div class="explore-card-item" 
                      data-title="{{ strtolower($anime['title']) }}"

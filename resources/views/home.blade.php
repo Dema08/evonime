@@ -3,7 +3,7 @@
     <!-- 1. HERO CAROUSEL SECTION -->
     <x-hero-banner :items="$heroItems" />
 
-    <div class="max-w-[1400px] mx-auto px-4 md:px-6 space-y-16 mt-8 text-[#F5F0E6]">
+    <div class="max-w-[1400px] mx-auto px-4 md:px-6 space-y-8 sm:space-y-16 mt-6 sm:mt-8 text-[#F5F0E6]">
 
         <!-- 2. CONTINUE WATCHING SECTION -->
         @if(count($continueWatching) > 0)
@@ -18,7 +18,7 @@
 
                 <div class="flex items-stretch gap-4 overflow-x-auto scrollbar-hide py-2 px-0.5">
                     @foreach($continueWatching as $cw)
-                        <div class="flex-none w-64 md:w-72 bg-[#1A1A1A] border-2 border-[#F5F0E6] shadow-[4px_4px_0px_#F5F0E6] hover:shadow-[6px_6px_0px_#F5F0E6] hover:-translate-y-1 transition-all duration-200 overflow-hidden group text-[#F5F0E6]">
+                        <div class="flex-none w-52 sm:w-64 md:w-72 bg-[#1A1A1A] border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] sm:shadow-[4px_4px_0px_#F5F0E6] hover:shadow-[5px_5px_0px_#F5F0E6] hover:-translate-y-1 transition-all duration-200 overflow-hidden group text-[#F5F0E6]">
                             <a href="/watch/{{ $cw['slug'] }}/{{ $cw['continue_ep'] }}" class="block relative aspect-video bg-zinc-900 overflow-hidden border-b-2 border-[#F5F0E6]">
                                 <img src="{{ $cw['banner'] }}" alt="{{ $cw['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                                 
@@ -82,9 +82,9 @@
             </div>
 
             <!-- 6-column Grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-4">
                 @foreach($latestEpisodes as $anime)
-                    <div class="group relative flex flex-col bg-[#1A1A1A] border-2 border-[#F5F0E6] shadow-[4px_4px_0px_#F5F0E6] hover:shadow-[6px_6px_0px_#F5F0E6] hover:-translate-y-1 transition-all duration-200 overflow-hidden text-[#F5F0E6]">
+                    <div class="group relative flex flex-col bg-[#1A1A1A] border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] sm:shadow-[4px_4px_0px_#F5F0E6] hover:shadow-[5px_5px_0px_#F5F0E6] hover:-translate-y-1 transition-all duration-200 overflow-hidden text-[#F5F0E6]">
                         <a href="/watch/{{ $anime['slug'] }}/{{ $anime['episodes'] }}" class="relative aspect-[2/3] overflow-hidden bg-zinc-900 block border-b-2 border-[#F5F0E6]">
                             <img src="{{ $anime['poster'] }}" alt="{{ $anime['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                             
@@ -143,7 +143,7 @@
                 </a>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-4">
                 @foreach($popularAnime as $anime)
                     <x-anime-card :anime="$anime" />
                 @endforeach
@@ -161,7 +161,7 @@
 
 
         <!-- 7. EXPLORE GENRES SECTION -->
-        <section id="genres" class="space-y-4 py-6 bg-[#141414] p-6 border-2 border-[#F5F0E6] shadow-[4px_4px_0px_#F5F0E6]">
+        <section id="genres" class="space-y-4 py-4 sm:py-6 bg-[#141414] p-3.5 sm:p-6 border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] sm:shadow-[4px_4px_0px_#F5F0E6]">
             <div class="border-b-2 border-[#F5F0E6] pb-2">
                 <h2 class="text-xl md:text-2xl font-black text-[#F5F0E6] flex items-center gap-2" style="font-family: 'Anton', sans-serif;">
                     <span class="w-2.5 h-5 bg-[#E63946] border border-[#F5F0E6] inline-block"></span>
@@ -181,7 +181,7 @@
 
 
         <!-- 8. ANIME SCHEDULE SECTION -->
-        <section id="schedule" class="space-y-4 py-6 bg-[#141414] p-6 border-2 border-[#F5F0E6] shadow-[4px_4px_0px_#F5F0E6]">
+        <section id="schedule" class="space-y-4 py-4 sm:py-6 bg-[#141414] p-3.5 sm:p-6 border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] sm:shadow-[4px_4px_0px_#F5F0E6]">
             <div class="border-b-2 border-[#F5F0E6] pb-2">
                 <h2 class="text-xl md:text-2xl font-black text-[#F5F0E6] flex items-center gap-2" style="font-family: 'Anton', sans-serif;">
                     <span class="w-2.5 h-5 bg-[#E63946] border border-[#F5F0E6] inline-block"></span>
