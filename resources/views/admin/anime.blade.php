@@ -49,7 +49,7 @@
                         @foreach($animeList as $anime)
                             <tr class="catalog-row hover:bg-zinc-900/60 transition-colors" data-title="{{ strtolower($anime['title']) }}">
                                 <td class="p-3 border-r-2 border-zinc-800">
-                                    <img src="{{ $anime['poster'] }}" alt="{{ $anime['title'] }}" class="w-10 h-14 object-cover border-2 border-white rounded-lg">
+                                    <img referrerpolicy="no-referrer" src="{{ $anime['poster'] }}" alt="{{ $anime['title'] }}" class="w-10 h-14 object-cover border-2 border-white rounded-lg">
                                 </td>
                                 <td class="p-3 border-r-2 border-zinc-800 text-white font-black">
                                     {{ $anime['title'] }}

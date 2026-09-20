@@ -76,7 +76,7 @@
 
                     <!-- Poster & Details -->
                     <div class="flex items-start gap-3">
-                        <img src="{{ $anime['poster'] }}" alt="{{ $anime['title'] }}" class="w-16 h-24 object-cover border-2 border-white rounded-xl flex-shrink-0 shadow-[2px_2px_0px_#FFFFFF]">
+                        <img referrerpolicy="no-referrer" src="{{ $anime['poster'] }}" alt="{{ $anime['title'] }}" class="w-16 h-24 object-cover border-2 border-white rounded-xl flex-shrink-0 shadow-[2px_2px_0px_#FFFFFF]">
                         
                         <div class="flex-grow min-w-0 space-y-1">
                             <h4 class="text-sm font-black text-white truncate">{{ $anime['title'] }}</h4>
@@ -178,7 +178,7 @@
                 <div>
                     <label class="block text-[10px] font-black uppercase text-zinc-400 mb-1">PREVIEW BANNER LANDSCAPE</label>
                     <div class="w-full aspect-video rounded-xl overflow-hidden border-2 border-white bg-black max-h-52">
-                        <img id="modal-banner-preview" src="" alt="Banner Preview" class="w-full h-full object-cover">
+                        <img referrerpolicy="no-referrer" id="modal-banner-preview" src="" alt="Banner Preview" class="w-full h-full object-cover">
                     </div>
                 </div>
 

@@ -9,12 +9,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Episode extends Model
 {
     protected $fillable = [
         'anime_id', 'episode_number', 'title', 'synopsis', 'duration',
         'thumbnail_path', 'aired_at', 'status', 'views_count',
+        'external_id_otakudesu', 'external_id_consumet',
     ];
 
     protected function casts(): array
@@ -52,7 +54,12 @@ class Episode extends Model
     // ---- Accessor ----
     public function getThumbnailUrlAttribute(): ?string
     {
-        return $this->thumbnail_path ? Storage::disk('public')->url($this->thumbnail_path) : null;
+        $path = $this->thumbnail_path;
+        if (empty($path)) return null;
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
+        }
+        return Storage::disk('public')->url($path);
     }
 
     // ---- Helper ----

@@ -7,7 +7,7 @@
     
     <!-- Episode Thumbnail -->
     <div class="relative w-28 md:w-32 aspect-video rounded-lg overflow-hidden bg-zinc-900 flex-shrink-0">
-        <img src="{{ $episode['thumbnail'] ?? 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=400&auto=format&fit=crop' }}" 
+        <img referrerpolicy="no-referrer" src="{{ $episode['thumbnail'] ?? 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=400&auto=format&fit=crop' }}" 
              alt="{{ $episode['title'] }}" 
              loading="lazy" 
              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">

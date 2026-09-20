@@ -21,8 +21,8 @@ if (! function_exists('getAnimeData')) {
                         'slug' => $a->slug,
                         'title' => $a->title,
                         'japanese_title' => $a->title_alternative ?? $a->title,
-                        'poster' => $a->poster_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($a->poster_path) : ($configItem['poster'] ?? 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800&auto=format&fit=crop'),
-                        'banner' => $a->banner_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($a->banner_path) : ($configItem['banner'] ?? 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=1600&auto=format&fit=crop'),
+                        'poster' => $a->poster_url ?? ($configItem['poster'] ?? 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800&auto=format&fit=crop'),
+                        'banner' => $a->banner_url ?? ($configItem['banner'] ?? 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=1600&auto=format&fit=crop'),
                         'trailer_url' => $configItem['trailer_url'] ?? null,
                         'rating' => (float)($a->rating ?? 9.0),
                         'year' => (int)($a->year ?? 2024),
@@ -89,22 +89,50 @@ Route::get('/anime', function () {
 });
 
 // 3. Anime Detail Page Route
-Route::get('/anime/{slug}', function ($slug) {
-    $animeList = getAnimeData();
-    $anime = collect($animeList)->firstWhere('slug', $slug) ?? $animeList[0];
-    $recommended = array_values(array_filter($animeList, fn($a) => $a['slug'] !== $anime['slug']));
-    
-    return view('anime.show', compact('anime', 'recommended'));
-});
+    Route::get('/anime/{slug}', function ($slug) {
+        $animeList = getAnimeData();
+        $anime = collect($animeList)->firstWhere('slug', $slug) ?? $animeList[0];
+        $recommended = array_values(array_filter($animeList, fn($a) => $a['slug'] !== $anime['slug']));
+
+        // Load episodes from database
+        $episodesList = [];
+        if (\Illuminate\Support\Facades\Schema::hasTable('episodes')) {
+            $dbAnime = \App\Models\Anime::where('slug', $slug)->first();
+            if ($dbAnime) {
+                $dbEpisodes = $dbAnime->episodes()->orderBy('episode_number')->get();
+                $episodesList = $dbEpisodes->map(fn($ep) => [
+                    'number' => $ep->episode_number,
+                    'title' => $ep->title,
+                    'thumbnail' => $ep->thumbnail_url,
+                    'duration' => $ep->duration ? floor($ep->duration / 60) . ' min' : '24 min',
+                    'watched' => false,
+                ])->toArray();
+            }
+        }
+
+        return view('anime.show', compact('anime', 'recommended', 'episodesList'));
+    });
 
 // 4. Watch Page Route
-Route::get('/watch/{slug}/{episode?}', function ($slug, $episode = 1) {
-    $animeList = getAnimeData();
-    $anime = collect($animeList)->firstWhere('slug', $slug) ?? $animeList[0];
-    $episodeNum = (int)$episode;
-    
-    return view('watch', compact('anime', 'episodeNum', 'animeList'));
-});
+    Route::get('/watch/{slug}/{episode?}', function ($slug, $episode = 1) {
+        $animeList = getAnimeData();
+        $anime = collect($animeList)->firstWhere('slug', $slug) ?? $animeList[0];
+        $episodeNum = (int)$episode;
+
+        // Load episodes from database
+        $episodes = collect();
+        $episodeId = null;
+        if (\Illuminate\Support\Facades\Schema::hasTable('episodes')) {
+            $dbAnime = \App\Models\Anime::where('slug', $slug)->first();
+            if ($dbAnime) {
+                $episodes = $dbAnime->episodes()->orderBy('episode_number')->get();
+                $ep = $episodes->firstWhere('episode_number', $episodeNum);
+                $episodeId = $ep?->id;
+            }
+        }
+
+        return view('watch', compact('anime', 'episodeNum', 'animeList', 'episodeId', 'episodes'));
+    });
 
 // 5. Watchlist Page Route
 Route::get('/watchlist', function () {

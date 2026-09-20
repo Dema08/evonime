@@ -11,7 +11,7 @@
     <a href="/anime/{{ $anime['slug'] }}" class="relative w-full aspect-[2/3] overflow-hidden bg-zinc-900 block border-b-2 border-[#F5F0E6]">
         
         <!-- Poster Image with Hover Zoom -->
-        <img src="{{ $anime['poster'] }}" 
+        <img referrerpolicy="no-referrer" src="{{ $anime['poster'] }}" 
              alt="{{ $anime['title'] }}" 
              loading="lazy" 
              class="w-full h-full object-cover object-center transform group-hover:scale-[1.05] transition-transform duration-300 ease-out">

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Anime extends Model
 {
@@ -84,12 +85,22 @@ class Anime extends Model
     // ---- Accessor ----
     public function getPosterUrlAttribute(): ?string
     {
-        return $this->poster_path ? Storage::disk('public')->url($this->poster_path) : null;
+        $path = $this->poster_path;
+        if (empty($path)) return null;
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
+        }
+        return Storage::disk('public')->url($path);
     }
 
     public function getBannerUrlAttribute(): ?string
     {
-        return $this->banner_path ? Storage::disk('public')->url($this->banner_path) : null;
+        $path = $this->banner_path;
+        if (empty($path)) return null;
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
+        }
+        return Storage::disk('public')->url($path);
     }
 
     // ---- Helper ----

@@ -10,7 +10,7 @@
                 <!-- Background Image & Gradients (Dark Manga Spread Style) -->
                 <div class="absolute inset-0 w-full h-full overflow-hidden">
                     <!-- Image Poster -->
-                    <img src="{{ $anime['banner'] }}" onerror="this.src='https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1600&auto=format&fit=crop'" alt="{{ $anime['title'] }}" class="hero-banner-img w-full h-full object-cover object-center transform scale-105 transition-transform duration-10000 ease-linear filter contrast-125 brightness-90">
+                    <img referrerpolicy="no-referrer" src="{{ $anime['banner'] }}" onerror="this.src='https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1600&auto=format&fit=crop'" alt="{{ $anime['title'] }}" class="hero-banner-img w-full h-full object-cover object-center transform scale-105 transition-transform duration-10000 ease-linear filter contrast-125 brightness-90">
                     
                     <!-- Background Video Container (YouTube Embed / MP4 Video) -->
                     <div class="hero-video-container absolute inset-0 w-full h-full overflow-hidden opacity-0 transition-opacity duration-1000 pointer-events-none z-10">

@@ -92,7 +92,7 @@
                         @forelse($latestAnimes as $anime)
                             <tr class="hover:bg-zinc-900/60 transition-colors">
                                 <td class="p-3 border-r-2 border-zinc-800">
-                                    <img src="{{ $anime->poster_path ? (str_starts_with($anime->poster_path, 'http') ? $anime->poster_path : Storage::url($anime->poster_path)) : 'https://placehold.co/100x140?text=No+Cover' }}" alt="{{ $anime->title }}" class="w-10 h-14 object-cover border border-[#F5F0E6]">
+                                    <img referrerpolicy="no-referrer" src="{{ $anime->poster_url ?? 'https://placehold.co/100x140?text=No+Cover' }}" alt="{{ $anime->title }}" class="w-10 h-14 object-cover border border-[#F5F0E6]">
                                 </td>
                                 <td class="p-3 border-r-2 border-zinc-800 text-white font-black">
                                     {{ $anime->title }}

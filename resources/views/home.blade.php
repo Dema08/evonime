@@ -20,7 +20,7 @@
                     @foreach($continueWatching as $cw)
                         <div class="flex-none w-52 sm:w-64 md:w-72 bg-[#1A1A1A] border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] sm:shadow-[4px_4px_0px_#F5F0E6] hover:shadow-[5px_5px_0px_#F5F0E6] hover:-translate-y-1 transition-all duration-200 overflow-hidden group text-[#F5F0E6]">
                             <a href="/watch/{{ $cw['slug'] }}/{{ $cw['continue_ep'] }}" class="block relative aspect-video bg-zinc-900 overflow-hidden border-b-2 border-[#F5F0E6]">
-                                <img src="{{ $cw['banner'] }}" alt="{{ $cw['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <img referrerpolicy="no-referrer" src="{{ $cw['banner'] }}" alt="{{ $cw['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                                 
                                 <!-- Play Button Overlay -->
                                 <div class="absolute inset-0 bg-[#0D0D0D]/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center halftone-bg">
@@ -86,7 +86,7 @@
                 @foreach($latestEpisodes as $anime)
                     <div class="group relative flex flex-col bg-[#1A1A1A] border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] sm:shadow-[4px_4px_0px_#F5F0E6] hover:shadow-[5px_5px_0px_#F5F0E6] hover:-translate-y-1 transition-all duration-200 overflow-hidden text-[#F5F0E6]">
                         <a href="/watch/{{ $anime['slug'] }}/{{ $anime['episodes'] }}" class="relative aspect-[2/3] overflow-hidden bg-zinc-900 block border-b-2 border-[#F5F0E6]">
-                            <img src="{{ $anime['poster'] }}" alt="{{ $anime['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            <img referrerpolicy="no-referrer" src="{{ $anime['poster'] }}" alt="{{ $anime['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                             
                             <!-- Badges -->
                             <div class="absolute top-2 left-2 right-2 flex items-center justify-between">
@@ -206,7 +206,7 @@
             <div id="schedule-content" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
                 @foreach($animeList as $anime)
                     <div data-schedule-day="{{ $anime['schedule_day'] }}" class="schedule-item-card flex items-center gap-3 p-3 bg-[#1A1A1A] border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] hover:shadow-[5px_5px_0px_#F5F0E6] transition-all text-[#F5F0E6]">
-                        <img src="{{ $anime['poster'] }}" alt="{{ $anime['title'] }}" class="w-14 h-18 object-cover border-2 border-[#F5F0E6] flex-shrink-0">
+                        <img referrerpolicy="no-referrer" src="{{ $anime['poster'] }}" alt="{{ $anime['title'] }}" class="w-14 h-18 object-cover border-2 border-[#F5F0E6] flex-shrink-0">
                         <div class="flex-grow min-w-0">
                             <h4 class="text-sm font-black text-[#F5F0E6] truncate">{{ $anime['title'] }}</h4>
                             <p class="text-xs text-zinc-400 font-bold mt-0.5">{{ $anime['latest_ep'] ?? 'Episode Release' }}</p>

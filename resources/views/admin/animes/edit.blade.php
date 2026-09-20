@@ -18,8 +18,8 @@
 @foreach($genres as $g)<label class="text-xs font-bold bg-[#141414] border border-zinc-700 px-2 py-2"><input type="checkbox" name="genres[]" value="{{ $g->id }}" @checked(in_array($g->id, old('genres', $selectedGenres))) class="accent-red-600"> {{ $g->name }}</label>@endforeach
 </div></div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-<div><label class="text-xs font-black">POSTER BARU</label>@if($anime->poster_path)<p class="text-[11px] text-zinc-500">Saat ini: {{ $anime->poster_path }}</p>@endif<input type="file" name="poster" accept="image/*" class="text-xs"></div>
-<div><label class="text-xs font-black">BANNER BARU</label>@if($anime->banner_path)<p class="text-[11px] text-zinc-500">Saat ini: {{ $anime->banner_path }}</p>@endif<input type="file" name="banner" accept="image/*" class="text-xs"></div>
+<div><label class="text-xs font-black">POSTER BARU</label>@if($anime->poster_url)<p class="text-[11px] text-zinc-500">Saat ini: {{ $anime->poster_url }}</p>@endif<input type="file" name="poster" accept="image/*" class="text-xs"></div>
+<div><label class="text-xs font-black">BANNER BARU</label>@if($anime->banner_url)<p class="text-[11px] text-zinc-500">Saat ini: {{ $anime->banner_url }}</p>@endif<input type="file" name="banner" accept="image/*" class="text-xs"></div>
 </div>
 <div class="flex gap-4 text-xs font-black">
 <label><input type="checkbox" name="is_published" value="1" @checked(old('is_published',$anime->is_published)) class="accent-red-600"> PUBLISH</label>

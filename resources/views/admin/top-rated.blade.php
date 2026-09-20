@@ -43,7 +43,7 @@
                     
                     <!-- Anime Info -->
                     <div class="flex items-center gap-4 min-w-0">
-                        <img src="{{ $anime['poster'] }}" alt="{{ $anime['title'] }}" class="w-16 h-22 object-cover border-2 border-white rounded-xl flex-shrink-0 shadow-[2px_2px_0px_#FFFFFF]">
+                        <img referrerpolicy="no-referrer" src="{{ $anime['poster'] }}" alt="{{ $anime['title'] }}" class="w-16 h-22 object-cover border-2 border-white rounded-xl flex-shrink-0 shadow-[2px_2px_0px_#FFFFFF]">
                         <div class="space-y-1.5 min-w-0">
                             <h4 class="text-base font-black text-white truncate">{{ $anime['title'] }}</h4>
                             <div class="flex flex-wrap items-center gap-2 text-xs font-bold text-zinc-400">

@@ -23,7 +23,7 @@
             @foreach(array_slice($animeList, 0, 4) as $anime)
                 <div class="flex items-center gap-4 p-3 bg-[#1A1A1A] border-2 border-[#F5F0E6] shadow-[3px_3px_0px_#F5F0E6] hover:shadow-[5px_5px_0px_#F5F0E6] transition-all group">
                     <a href="/watch/{{ $anime['slug'] }}/{{ $anime['continue_ep'] ?? 1 }}" class="relative w-32 aspect-video bg-zinc-900 border border-[#F5F0E6] overflow-hidden flex-shrink-0">
-                        <img src="{{ $anime['banner'] }}" alt="{{ $anime['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <img referrerpolicy="no-referrer" src="{{ $anime['banner'] }}" alt="{{ $anime['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         <div class="absolute inset-0 bg-[#0D0D0D]/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center halftone-bg">
                             <div class="w-8 h-8 bg-[#E63946] text-white border border-[#F5F0E6] flex items-center justify-center shadow">
                                 <svg class="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24">

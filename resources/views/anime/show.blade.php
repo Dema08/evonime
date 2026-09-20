@@ -5,7 +5,7 @@
         
         <!-- Blurred Background Image -->
         <div class="absolute inset-0 w-full h-full overflow-hidden">
-            <img src="{{ $anime['banner'] }}" alt="{{ $anime['title'] }}" class="w-full h-full object-cover filter blur-2xl opacity-30 transform scale-110">
+            <img src="{{ $anime['banner'] }}" referrerpolicy="no-referrer" alt="{{ $anime['title'] }}" class="w-full h-full object-cover filter blur-2xl opacity-30 transform scale-110">
             <div class="absolute inset-0 bg-gradient-to-t from-[#070707] via-[#070707]/80 to-[#070707]/60"></div>
         </div>
 
@@ -15,7 +15,7 @@
                 
                 <!-- Poster Image Card -->
                 <div class="w-48 sm:w-56 md:w-64 aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-zinc-700/60 flex-shrink-0 mx-auto md:mx-0">
-                    <img src="{{ $anime['poster'] }}" alt="{{ $anime['title'] }}" class="w-full h-full object-cover">
+                    <img src="{{ $anime['poster'] }}" referrerpolicy="no-referrer" alt="{{ $anime['title'] }}" class="w-full h-full object-cover">
                 </div>
 
                 <!-- Info Details -->
@@ -116,11 +116,15 @@
 
         <!-- Episode Cards Grid -->
         <div id="episode-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        @foreach($anime['episodes_list'] ?? [] as $ep)
+            @forelse($episodesList as $ep)
                 <div class="episode-item-wrapper" data-title="{{ strtolower($ep['title']) }}" data-ep="{{ $ep['number'] }}">
                     <x-episode-card :animeSlug="$anime['slug']" :episode="$ep" />
                 </div>
-            @endforeach
+            @empty
+                <div class="col-span-full text-center py-12 text-zinc-500 text-sm font-semibold">
+                    Belum ada episode untuk anime ini.
+                </div>
+            @endforelse
         </div>
 
         <!-- YOU MAY ALSO LIKE SECTION -->

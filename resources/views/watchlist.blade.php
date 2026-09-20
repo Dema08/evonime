@@ -24,7 +24,7 @@
                 <!-- Demo default items if localStorage is empty -->
                 <div class="watchlist-card-demo flex flex-col bg-[#1A1A1A] border-2 border-[#F5F0E6] shadow-[4px_4px_0px_#F5F0E6] hover:shadow-[6px_6px_0px_#F5F0E6] transition-all overflow-hidden group text-[#F5F0E6]">
                     <a href="/anime/{{ $anime['slug'] }}" class="relative aspect-[2/3] bg-zinc-900 block overflow-hidden border-b-2 border-[#F5F0E6]">
-                        <img src="{{ $anime['poster'] }}" alt="{{ $anime['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <img referrerpolicy="no-referrer" src="{{ $anime['poster'] }}" alt="{{ $anime['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         <div class="absolute top-2 right-2 px-2 py-0.5 bg-amber-400 text-[#0D0D0D] text-xs font-black border border-[#F5F0E6] shadow-[1px_1px_0px_#F5F0E6]">
                             ★ {{ number_format($anime['rating'], 1) }}
                         </div>

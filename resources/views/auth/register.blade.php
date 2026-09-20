@@ -4,7 +4,7 @@
         
         <!-- Background Overlay -->
         <div class="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
-            <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1600&auto=format&fit=crop" alt="Anime Background" class="w-full h-full object-cover filter blur-md opacity-25">
+            <img referrerpolicy="no-referrer" src="https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1600&auto=format&fit=crop" alt="Anime Background" class="w-full h-full object-cover filter blur-md opacity-25">
             <div class="absolute inset-0 bg-gradient-to-t from-[#070707] via-[#070707]/80 to-[#070707]"></div>
         </div>
 
