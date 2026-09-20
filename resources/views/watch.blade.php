@@ -184,16 +184,20 @@
 
                 <!-- Episode Items List -->
                 <div class="space-y-2 max-h-[580px] overflow-y-auto pr-1">
-                    @foreach($episodes->sortBy('episode_number') as $ep)
-                        <a href="/watch/{{ $anime['slug'] }}/{{ $ep->episode_number }}" 
-                           class="flex items-center justify-between p-2.5 rounded-lg border-2 transition-all text-xs font-black {{ $ep->episode_number == $episodeNum ? 'bg-[#E63946] text-white border-[#F5F0E6] shadow-[2px_2px_0px_#F5F0E6]' : 'bg-[#141414] hover:bg-zinc-800 border-[#F5F0E6] text-[#F5F0E6]' }}">
+                    @foreach($episodes as $ep)
+                        @php
+                            $epNum = is_array($ep) ? ($ep['episode_number'] ?? $ep['number'] ?? 1) : ($ep->episode_number ?? $ep->number ?? 1);
+                            $epTitle = is_array($ep) ? ($ep['title'] ?? ('Episode ' . $epNum)) : ($ep->title ?? ('Episode ' . $epNum));
+                        @endphp
+                        <a href="/watch/{{ $anime['slug'] }}/{{ $epNum }}" 
+                           class="flex items-center justify-between p-2.5 rounded-lg border-2 transition-all text-xs font-black {{ $epNum == $episodeNum ? 'bg-[#E63946] text-white border-[#F5F0E6] shadow-[2px_2px_0px_#F5F0E6]' : 'bg-[#141414] hover:bg-zinc-800 border-[#F5F0E6] text-[#F5F0E6]' }}">
                             <div class="flex items-center gap-2.5 min-w-0">
                                 <span class="w-7 h-7 flex items-center justify-center font-mono text-[11px] bg-[#0D0D0D] border border-[#F5F0E6] text-[#F5F0E6]">
-                                    {{ sprintf('%02d', $ep->episode_number) }}
+                                    {{ sprintf('%02d', $epNum) }}
                                 </span>
-                                <span class="truncate">{{ $ep->title }}</span>
+                                <span class="truncate">{{ $epTitle }}</span>
                             </div>
-                            @if($ep->episode_number == $episodeNum)
+                            @if($epNum == $episodeNum)
                                 <span class="w-2 h-2 bg-white animate-pulse flex-shrink-0"></span>
                             @endif
                         </a>

@@ -40,7 +40,7 @@
 
                         <!-- Anime Title (Manga Font) -->
                         <h1 class="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-[#F5F0E6] tracking-tight leading-none drop-shadow-[2px_2px_0px_#111111]" style="font-family: 'Anton', sans-serif;">
-                            {{ $anime['title'] }}
+                            <a href="/anime/{{ $anime['slug'] }}" class="hover:text-[#E63946] transition-colors">{{ $anime['title'] }}</a>
                         </h1>
 
                         <!-- Anime Metadata -->
@@ -73,15 +73,15 @@
                                 <svg class="w-4 h-4 sm:w-5 sm:h-5 fill-current" viewBox="0 0 24 24">
                                     <path d="M8 5v14l11-7z"/>
                                 </svg>
-                                READ & WATCH NOW
+                                WATCH EP 01
                             </a>
 
-                            <button type="button" data-slug="{{ $anime['slug'] }}" onclick="window.toggleWatchlist('{{ $anime['slug'] }}', this)" class="manga-button px-4 py-2.5 sm:px-6 sm:py-3.5 text-xs sm:text-sm font-extrabold rounded-xl text-white flex items-center gap-2">
-                                <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                            <a href="/anime/{{ $anime['slug'] }}" class="manga-button px-4 py-2.5 sm:px-6 sm:py-3.5 text-xs sm:text-sm font-extrabold rounded-xl text-white flex items-center gap-2">
+                                <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 fill-none stroke-current" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
                                 </svg>
-                                <span>ADD TO LIST</span>
-                            </button>
+                                <span>EPISODES ({{ $anime['episodes'] }})</span>
+                            </a>
                         </div>
 
                     </div>

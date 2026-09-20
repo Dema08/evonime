@@ -4,51 +4,50 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-// Global helper to get all anime data
+// Global helper to get all real anime data from database
 if (! function_exists('getAnimeData')) {
     function getAnimeData() {
         try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('animes') && \App\Models\Anime::count() > 0) {
-                $dbAnimes = \App\Models\Anime::with('genres')->get();
-                $configAnimes = config('anime.anime', []);
-                $configMap = collect($configAnimes)->keyBy('slug');
-
-                $mapped = [];
-                foreach ($dbAnimes as $index => $a) {
-                    $configItem = $configMap->get($a->slug, []);
-                    $mapped[] = [
-                        'id' => $a->id,
-                        'slug' => $a->slug,
-                        'title' => $a->title,
-                        'japanese_title' => $a->title_alternative ?? $a->title,
-                        'poster' => $a->poster_url ?? ($configItem['poster'] ?? 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800&auto=format&fit=crop'),
-                        'banner' => $a->banner_url ?? ($configItem['banner'] ?? 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=1600&auto=format&fit=crop'),
-                        'trailer_url' => $configItem['trailer_url'] ?? null,
-                        'rating' => (float)($a->rating ?? 9.0),
-                        'year' => (int)($a->year ?? 2024),
-                        'type' => strtoupper($a->type ?? 'TV'),
-                        'episodes' => (int)($a->total_episodes ?? 12),
-                        'status' => ucfirst($a->status ?? 'ongoing'),
-                        'genres' => $a->genres->pluck('name')->all() ?: ($configItem['genres'] ?? ['Action', 'Fantasy']),
-                        'synopsis' => $a->synopsis,
-                        'trending_rank' => $a->is_featured ? ($index + 1) : ($configItem['trending_rank'] ?? null),
-                        'latest_ep' => 'EP ' . ($a->total_episodes ?? 12),
-                        'latest_date' => 'Recently',
-                        'schedule_day' => $configItem['schedule_day'] ?? 'SAT',
-                        'schedule_time' => $configItem['schedule_time'] ?? '23:30',
-                        'continue_progress' => $configItem['continue_progress'] ?? 50,
-                        'continue_ep' => $configItem['continue_ep'] ?? 1,
-                        'studio' => $a->studio ?? 'Studio',
-                        'quality' => 'HD',
-                        'sub' => true,
-                        'dub' => true,
-                    ];
+            if (\Illuminate\Support\Facades\Schema::hasTable('animes')) {
+                $dbAnimes = \App\Models\Anime::with(['genres', 'episodes'])->published()->get();
+                if ($dbAnimes->count() > 0) {
+                    $mapped = [];
+                    foreach ($dbAnimes as $index => $a) {
+                        $epCount = $a->episodes->count() > 0 ? $a->episodes->count() : ($a->total_episodes ?: 0);
+                        $mapped[] = [
+                            'id' => $a->id,
+                            'slug' => $a->slug,
+                            'title' => $a->title,
+                            'japanese_title' => $a->title_alternative ?? $a->title,
+                            'poster' => $a->poster_url ?? 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800&auto=format&fit=crop',
+                            'banner' => $a->banner_url ?? ($a->poster_url ?? 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=1600&auto=format&fit=crop'),
+                            'trailer_url' => null,
+                            'rating' => (float)($a->rating ?? 9.0),
+                            'year' => (int)($a->year ?? 2024),
+                            'type' => strtoupper($a->type ?? 'TV'),
+                            'episodes' => (int)$epCount,
+                            'status' => ucfirst($a->status ?? 'Ongoing'),
+                            'genres' => $a->genres->pluck('name')->all() ?: ['Action', 'Fantasy'],
+                            'synopsis' => $a->synopsis,
+                            'trending_rank' => $a->is_featured ? ($index + 1) : null,
+                            'latest_ep' => 'EP ' . $epCount,
+                            'latest_date' => 'Recently',
+                            'schedule_day' => 'SAT',
+                            'schedule_time' => '23:30',
+                            'continue_progress' => 50,
+                            'continue_ep' => 1,
+                            'studio' => $a->studio ?? 'Studio',
+                            'quality' => 'HD',
+                            'sub' => true,
+                            'dub' => true,
+                        ];
+                    }
+                    return $mapped;
                 }
-                if (!empty($mapped)) return $mapped;
             }
         } catch (\Throwable $e) {}
 
-        return config('anime.anime', []);
+        return [];
     }
 }
 
@@ -58,15 +57,17 @@ Route::get('/', function () {
     
     // Split into sections
     $heroItems = array_values(array_filter($animeList, fn($a) => !empty($a['trending_rank'])));
-    $trendingNow = array_values(array_filter($animeList, fn($a) => !empty($a['trending_rank'])));
-    usort($trendingNow, fn($a, $b) => $a['trending_rank'] <=> $b['trending_rank']);
-
+    if (empty($heroItems) && !empty($animeList)) {
+        $heroItems = array_slice($animeList, 0, 3);
+    }
+    
+    $trendingNow = $animeList;
     $continueWatching = array_values(array_filter($animeList, fn($a) => isset($a['continue_progress']) && $a['continue_progress'] > 0));
     $latestEpisodes = array_slice($animeList, 0, 6);
     $popularAnime = $animeList;
-    $recommended = array_slice($animeList, 4, 6);
-    $genres = config('anime.genres', []);
-    $scheduleDays = config('anime.schedule_days', []);
+    $recommended = array_slice($animeList, 0, 6);
+    $genres = config('anime.genres', ['Action', 'Adventure', 'Fantasy', 'Shounen', 'Supernatural']);
+    $scheduleDays = config('anime.schedule_days', ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']);
 
     return view('home', compact(
         'heroItems', 
@@ -84,55 +85,92 @@ Route::get('/', function () {
 // 2. Anime Explore Page Route
 Route::get('/anime', function () {
     $animeList = getAnimeData();
-    $genres = config('anime.genres', []);
+    $genres = config('anime.genres', ['Action', 'Adventure', 'Fantasy', 'Shounen', 'Supernatural']);
     return view('anime.index', compact('animeList', 'genres'));
 });
 
 // 3. Anime Detail Page Route
-    Route::get('/anime/{slug}', function ($slug) {
-        $animeList = getAnimeData();
-        $anime = collect($animeList)->firstWhere('slug', $slug) ?? $animeList[0];
-        $recommended = array_values(array_filter($animeList, fn($a) => $a['slug'] !== $anime['slug']));
+Route::get('/anime/{slug}', function ($slug) {
+    $animeList = getAnimeData();
+    $anime = collect($animeList)->firstWhere('slug', $slug);
 
-        // Load episodes from database
-        $episodesList = [];
-        if (\Illuminate\Support\Facades\Schema::hasTable('episodes')) {
-            $dbAnime = \App\Models\Anime::where('slug', $slug)->first();
-            if ($dbAnime) {
-                $dbEpisodes = $dbAnime->episodes()->orderBy('episode_number')->get();
-                $episodesList = $dbEpisodes->map(fn($ep) => [
-                    'number' => $ep->episode_number,
-                    'title' => $ep->title,
-                    'thumbnail' => $ep->thumbnail_url,
-                    'duration' => $ep->duration ? floor($ep->duration / 60) . ' min' : '24 min',
-                    'watched' => false,
-                ])->toArray();
-            }
-        }
+    if (!$anime) {
+        $dbAnime = \App\Models\Anime::with(['genres', 'episodes'])->where('slug', $slug)->firstOrFail();
+        $epCount = $dbAnime->episodes->count();
+        $anime = [
+            'id' => $dbAnime->id,
+            'slug' => $dbAnime->slug,
+            'title' => $dbAnime->title,
+            'japanese_title' => $dbAnime->title_alternative ?? $dbAnime->title,
+            'poster' => $dbAnime->poster_url,
+            'banner' => $dbAnime->banner_url ?? $dbAnime->poster_url,
+            'rating' => (float)($dbAnime->rating ?? 9.0),
+            'year' => (int)($dbAnime->year ?? 2024),
+            'type' => strtoupper($dbAnime->type ?? 'TV'),
+            'episodes' => $epCount,
+            'status' => ucfirst($dbAnime->status ?? 'Ongoing'),
+            'genres' => $dbAnime->genres->pluck('name')->all(),
+            'synopsis' => $dbAnime->synopsis,
+            'studio' => $dbAnime->studio ?? 'Studio',
+            'quality' => 'HD',
+        ];
+    }
 
-        return view('anime.show', compact('anime', 'recommended', 'episodesList'));
-    });
+    $recommended = array_values(array_filter($animeList, fn($a) => $a['slug'] !== $anime['slug']));
+
+    // Load episodes from database
+    $episodesList = [];
+    $dbAnime = \App\Models\Anime::where('slug', $slug)->first();
+    if ($dbAnime) {
+        $dbEpisodes = $dbAnime->episodes()->orderBy('episode_number')->get();
+        $episodesList = $dbEpisodes->map(fn($ep) => [
+            'number' => (int)$ep->episode_number,
+            'title' => $ep->title,
+            'thumbnail' => $ep->thumbnail_url ?: ($dbAnime->banner_url ?: $dbAnime->poster_url),
+            'duration' => $ep->duration ? floor($ep->duration / 60) . ' min' : '24 min',
+            'watched' => false,
+        ])->toArray();
+    }
+
+    return view('anime.show', compact('anime', 'recommended', 'episodesList'));
+});
 
 // 4. Watch Page Route
-    Route::get('/watch/{slug}/{episode?}', function ($slug, $episode = 1) {
-        $animeList = getAnimeData();
-        $anime = collect($animeList)->firstWhere('slug', $slug) ?? $animeList[0];
-        $episodeNum = (int)$episode;
+Route::get('/watch/{slug}/{episode?}', function ($slug, $episode = 1) {
+    $animeList = getAnimeData();
+    $anime = collect($animeList)->firstWhere('slug', $slug);
+    $episodeNum = (int)$episode;
 
-        // Load episodes from database
-        $episodes = collect();
-        $episodeId = null;
-        if (\Illuminate\Support\Facades\Schema::hasTable('episodes')) {
-            $dbAnime = \App\Models\Anime::where('slug', $slug)->first();
-            if ($dbAnime) {
-                $episodes = $dbAnime->episodes()->orderBy('episode_number')->get();
-                $ep = $episodes->firstWhere('episode_number', $episodeNum);
-                $episodeId = $ep?->id;
-            }
-        }
+    $episodes = collect();
+    $episodeId = null;
 
-        return view('watch', compact('anime', 'episodeNum', 'animeList', 'episodeId', 'episodes'));
-    });
+    $dbAnime = \App\Models\Anime::where('slug', $slug)->firstOrFail();
+    if (!$anime) {
+        $anime = [
+            'id' => $dbAnime->id,
+            'slug' => $dbAnime->slug,
+            'title' => $dbAnime->title,
+            'japanese_title' => $dbAnime->title_alternative ?? $dbAnime->title,
+            'poster' => $dbAnime->poster_url,
+            'banner' => $dbAnime->banner_url ?? $dbAnime->poster_url,
+            'rating' => (float)($dbAnime->rating ?? 9.0),
+            'year' => (int)($dbAnime->year ?? 2024),
+            'type' => strtoupper($dbAnime->type ?? 'TV'),
+            'episodes' => $dbAnime->episodes->count(),
+            'status' => ucfirst($dbAnime->status ?? 'Ongoing'),
+            'genres' => $dbAnime->genres->pluck('name')->all(),
+            'synopsis' => $dbAnime->synopsis,
+            'studio' => $dbAnime->studio ?? 'Studio',
+            'quality' => 'HD',
+        ];
+    }
+
+    $episodes = $dbAnime->episodes()->orderBy('episode_number')->get();
+    $ep = $episodes->firstWhere('episode_number', $episodeNum);
+    $episodeId = $ep?->id;
+
+    return view('watch', compact('anime', 'episodeNum', 'animeList', 'episodeId', 'episodes'));
+});
 
 // 5. Watchlist Page Route
 Route::get('/watchlist', function () {
