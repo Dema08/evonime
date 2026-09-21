@@ -79,6 +79,43 @@ class AnimeController extends Controller
         $anime->update(['is_featured' => ! $anime->is_featured]);
         $this->animeService->invalidateCache($anime->id);
 
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true, 'is_featured' => $anime->is_featured]);
+        }
+
         return back()->with('success', 'Status featured anime diperbarui.');
+    }
+
+    public function updateHeroMedia(Request $request, Anime $anime)
+    {
+        $validated = $request->validate([
+            'is_featured' => ['nullable', 'boolean'],
+            'banner_path' => ['nullable', 'string', 'max:500'],
+            'trailer_url' => ['nullable', 'string', 'max:500'],
+            'synopsis'    => ['nullable', 'string'],
+        ]);
+
+        $updateData = [];
+        if ($request->has('is_featured')) {
+            $updateData['is_featured'] = $request->boolean('is_featured');
+        }
+        if (array_key_exists('banner_path', $validated)) {
+            $updateData['banner_path'] = $validated['banner_path'];
+        }
+        if (array_key_exists('trailer_url', $validated)) {
+            $updateData['trailer_url'] = $validated['trailer_url'];
+        }
+        if (array_key_exists('synopsis', $validated)) {
+            $updateData['synopsis'] = $validated['synopsis'];
+        }
+
+        $anime->update($updateData);
+        $this->animeService->invalidateCache($anime->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Foto/Video Hero Banner anime berhasil diperbarui!',
+            'data'    => $anime,
+        ]);
     }
 }

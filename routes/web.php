@@ -21,7 +21,7 @@ if (! function_exists('getAnimeData')) {
                             'japanese_title' => $a->title_alternative ?? $a->title,
                             'poster' => $a->poster_url ?? 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800&auto=format&fit=crop',
                             'banner' => $a->banner_url ?? ($a->poster_url ?? 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=1600&auto=format&fit=crop'),
-                            'trailer_url' => null,
+                            'trailer_url' => $a->trailer_url ?? null,
                             'rating' => (float)($a->rating ?? 9.0),
                             'year' => (int)($a->year ?? 2024),
                             'type' => strtoupper($a->type ?? 'TV'),
@@ -29,6 +29,7 @@ if (! function_exists('getAnimeData')) {
                             'status' => ucfirst($a->status ?? 'Ongoing'),
                             'genres' => $a->genres->pluck('name')->all() ?: ['Action', 'Fantasy'],
                             'synopsis' => $a->synopsis,
+                            'is_featured' => (bool)$a->is_featured,
                             'trending_rank' => $a->is_featured ? ($index + 1) : null,
                             'latest_ep' => 'EP ' . $epCount,
                             'latest_date' => 'Recently',
@@ -55,10 +56,16 @@ if (! function_exists('getAnimeData')) {
 Route::get('/', function () {
     $animeList = getAnimeData();
     
-    // Split into sections
-    $heroItems = array_values(array_filter($animeList, fn($a) => !empty($a['trending_rank'])));
+    // Filter hero items: anime with rating >= 9.0 OR is_featured == true
+    $heroItems = array_values(array_filter($animeList, function($a) {
+        return !empty($a['is_featured']) || (isset($a['rating']) && (float)$a['rating'] >= 9.0);
+    }));
+
+    // Fallback if no anime has rating >= 9.0 or is_featured yet: take top rated anime in database
     if (empty($heroItems) && !empty($animeList)) {
-        $heroItems = array_slice($animeList, 0, 3);
+        $sorted = $animeList;
+        usort($sorted, fn($a, $b) => ($b['rating'] <=> $a['rating']));
+        $heroItems = array_slice($sorted, 0, 5);
     }
     
     $trendingNow = $animeList;

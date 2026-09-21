@@ -50,11 +50,11 @@
         <div id="hero-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             @foreach($animeList as $anime)
                 @php
-                    $isHero = !empty($anime['trending_rank']);
-                    $rankNum = $anime['trending_rank'] ?? 99;
-                    $isTopRated = (isset($anime['rating']) && $anime['rating'] >= 8.5) || !empty($anime['trending_rank']);
+                    $isHero = !empty($anime['is_featured']);
+                    $isTopRated = (isset($anime['rating']) && (float)$anime['rating'] >= 9.0) || $isHero;
                 @endphp
                 <div class="hero-card-box flex flex-col justify-between p-4 bg-[#1A1A1A] border-2 border-white shadow-[4px_4px_0px_#FFFFFF] rounded-2xl relative transition-all group space-y-3" 
+                     data-id="{{ $anime['id'] }}"
                      data-slug="{{ $anime['slug'] }}"
                      data-rating="{{ $anime['rating'] }}"
                      data-top-rated="{{ $isTopRated ? '1' : '0' }}">
@@ -63,7 +63,7 @@
                     <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
                         @if($isTopRated)
                             <span class="px-2 py-0.5 bg-amber-400 text-[#0D0D0D] text-[10px] font-black border border-white rounded shadow-[1px_1px_0px_#FFFFFF]">
-                                🏆 TOP WEEKLY RATING
+                                🏆 RATING ≥ 9.0
                             </span>
                         @else
                             <span class="px-2 py-0.5 bg-[#141414] text-zinc-400 text-[10px] font-black border border-white rounded">
@@ -96,6 +96,7 @@
                         <label class="inline-flex items-center gap-2 cursor-pointer select-none">
                             <input type="checkbox" 
                                    class="hero-toggle-checkbox w-5 h-5 accent-[#E63946] rounded cursor-pointer"
+                                   data-id="{{ $anime['id'] }}"
                                    data-slug="{{ $anime['slug'] }}"
                                    {{ $isHero ? 'checked' : '' }}
                                    onchange="window.updateHeroState(this)">
@@ -104,7 +105,7 @@
 
                         <!-- Edit Landscape Banner & Synopsis Button -->
                         <button type="button" 
-                                onclick="window.openHeroEditModal('{{ $anime['slug'] }}', '{{ addslashes($anime['title']) }}', '{{ addslashes($anime['banner']) }}', '{{ addslashes($anime['synopsis']) }}', '{{ addslashes($anime['trailer_url'] ?? '') }}')" 
+                                onclick="window.openHeroEditModal('{{ $anime['id'] }}', '{{ $anime['slug'] }}', '{{ addslashes($anime['title']) }}', '{{ addslashes($anime['banner']) }}', '{{ addslashes($anime['synopsis']) }}', '{{ addslashes($anime['trailer_url'] ?? '') }}')" 
                                 class="px-3 py-1.5 bg-[#141414] hover:bg-[#E63946] text-white border-2 border-white text-[11px] font-black rounded-xl transition-all shadow-[2px_2px_0px_#FFFFFF]">
                             ✏️ FOTO, VIDEO & DESKRIPSI
                         </button>
@@ -133,6 +134,7 @@
 
             <!-- Scrollable Modal Body Form -->
             <form onsubmit="window.saveHeroModalEdit(event)" class="space-y-4 overflow-y-auto flex-grow pr-1 max-h-[calc(90vh-120px)] scrollbar-hide">
+                <input type="hidden" id="modal-anime-id">
                 <input type="hidden" id="modal-anime-slug">
 
                 <div>
@@ -200,8 +202,7 @@
     <!-- Script for Hero Page Filter & Modal -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            initHeroPage();
-            filterHeroGrid('top'); // Default to top weekly rating >= 9.5
+            filterHeroGrid('top'); // Default to top weekly rating >= 9.0
         });
 
         // Media Type Switcher
@@ -259,23 +260,18 @@
         };
 
         // 2. Modal Edit Landscape, Trailer & Synopsis
-        window.openHeroEditModal = function(slug, title, bannerUrl, synopsis, trailerUrl) {
+        window.openHeroEditModal = function(id, slug, title, bannerUrl, synopsis, trailerUrl) {
             const modal = document.getElementById('hero-edit-modal');
-            const customDetails = JSON.parse(localStorage.getItem('evonime_custom_hero_details') || '{}');
 
+            document.getElementById('modal-anime-id').value = id;
             document.getElementById('modal-anime-slug').value = slug;
             document.getElementById('modal-anime-title').value = title;
+            document.getElementById('modal-banner-url').value = bannerUrl;
+            document.getElementById('modal-synopsis').value = synopsis;
+            document.getElementById('modal-trailer-url').value = trailerUrl || '';
+            document.getElementById('modal-banner-preview').src = bannerUrl;
 
-            const finalBanner = customDetails[slug]?.banner || bannerUrl;
-            const finalSynopsis = customDetails[slug]?.synopsis || synopsis;
-            const finalTrailer = customDetails[slug]?.trailer || trailerUrl || '';
-            const finalMediaType = customDetails[slug]?.media_type || (finalTrailer ? 'video' : 'image');
-
-            document.getElementById('modal-banner-url').value = finalBanner;
-            document.getElementById('modal-synopsis').value = finalSynopsis;
-            document.getElementById('modal-trailer-url').value = finalTrailer;
-            document.getElementById('modal-banner-preview').src = finalBanner;
-
+            const finalMediaType = (trailerUrl && trailerUrl.trim() !== '') ? 'video' : 'image';
             if (finalMediaType === 'video') {
                 document.getElementById('media-type-video').checked = true;
                 window.switchModalMediaType('video');
@@ -295,77 +291,76 @@
             document.getElementById('hero-edit-modal').classList.add('hidden');
         };
 
-        window.saveHeroModalEdit = function(e) {
+        window.saveHeroModalEdit = async function(e) {
             e.preventDefault();
+            const animeId = document.getElementById('modal-anime-id').value;
             const slug = document.getElementById('modal-anime-slug').value;
             const banner = document.getElementById('modal-banner-url').value;
             const synopsis = document.getElementById('modal-synopsis').value;
             const trailer = document.getElementById('modal-trailer-url').value;
             const mediaType = document.querySelector('input[name="modal_media_type"]:checked')?.value || 'image';
 
-            const customDetails = JSON.parse(localStorage.getItem('evonime_custom_hero_details') || '{}');
-            customDetails[slug] = { media_type: mediaType, banner, synopsis, trailer };
-            localStorage.setItem('evonime_custom_hero_details', JSON.stringify(customDetails));
+            try {
+                const response = await fetch(`/admin/animes/${animeId}/hero-media`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        banner_path: banner,
+                        trailer_url: mediaType === 'video' ? trailer : '',
+                        synopsis: synopsis,
+                        is_featured: true
+                    })
+                });
+                const res = await response.json();
+                if (res.success) {
+                    const chk = document.querySelector(`.hero-toggle-checkbox[data-id="${animeId}"]`);
+                    if (chk) chk.checked = true;
 
-            // Also enable hero checkbox for this anime if not checked
-            const chk = document.querySelector(`.hero-toggle-checkbox[data-slug="${slug}"]`);
-            if (chk) chk.checked = true;
-
-            window.saveHeroSettings();
-            window.closeHeroEditModal();
-            if (window.showToast) window.showToast(`Hero Media (${mediaType.toUpperCase()}) untuk "${slug}" berhasil disimpan!`);
+                    window.closeHeroEditModal();
+                    if (window.showToast) {
+                        window.showToast(`Hero Media (${mediaType.toUpperCase()}) berhasil disimpan ke Database!`);
+                    } else {
+                        alert(`Hero Media (${mediaType.toUpperCase()}) berhasil disimpan ke Database!`);
+                    }
+                    setTimeout(() => window.location.reload(), 600);
+                } else {
+                    alert('Gagal menyimpan hero media.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Terjadi kesalahan saat menyimpan data.');
+            }
         };
 
         // 3. Save Hero Settings
-        window.updateHeroState = function(chk) {
-            window.saveHeroSettings();
-        };
+        window.updateHeroState = async function(chk) {
+            const animeId = chk.getAttribute('data-id');
 
-        window.saveHeroSettings = function() {
-            const checkboxes = document.querySelectorAll('.hero-toggle-checkbox');
-            const heroState = {};
-            let count = 0;
-
-            checkboxes.forEach((chk, i) => {
-                const slug = chk.getAttribute('data-slug');
-                if (chk.checked) {
-                    heroState[slug] = count + 1;
-                    count++;
-                }
-            });
-
-            localStorage.setItem('evonime_custom_hero', JSON.stringify(heroState));
-
-            const badgeCount = document.getElementById('hero-active-count');
-            if (badgeCount) badgeCount.textContent = count;
-
-            if (window.showToast) window.showToast('Pengaturan Hero Banner berhasil disimpan!');
-        };
-
-        window.resetHeroSettings = function() {
-            localStorage.removeItem('evonime_custom_hero');
-            localStorage.removeItem('evonime_custom_hero_details');
-            if (window.showToast) window.showToast('Hero Banner di-reset ke default');
-            setTimeout(() => window.location.reload(), 500);
-        };
-
-        function initHeroPage() {
-            const savedHero = JSON.parse(localStorage.getItem('evonime_custom_hero') || 'null');
-            if (savedHero) {
-                let count = 0;
-                document.querySelectorAll('.hero-toggle-checkbox').forEach(chk => {
-                    const slug = chk.getAttribute('data-slug');
-                    if (savedHero.hasOwnProperty(slug)) {
-                        chk.checked = true;
-                        count++;
-                    } else {
-                        chk.checked = false;
+            try {
+                const response = await fetch(`/admin/animes/${animeId}/toggle-featured`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
                     }
                 });
-                const badgeCount = document.getElementById('hero-active-count');
-                if (badgeCount) badgeCount.textContent = count;
+                const res = await response.json();
+                if (res.success) {
+                    const badgeCount = document.getElementById('hero-active-count');
+                    const activeCount = document.querySelectorAll('.hero-toggle-checkbox:checked').length;
+                    if (badgeCount) badgeCount.textContent = activeCount;
+                    if (window.showToast) window.showToast('Status Hero Banner diperbarui di Database!');
+                }
+            } catch (err) {
+                console.error(err);
             }
-        }
+        };
     </script>
 
 </x-admin-layout>
+

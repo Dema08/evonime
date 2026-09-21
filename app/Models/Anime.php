@@ -17,7 +17,7 @@ class Anime extends Model
     protected $fillable = [
         'title', 'title_alternative', 'slug', 'synopsis', 'type', 'status',
         'release_date', 'end_date', 'rating', 'total_episodes', 'duration',
-        'studio', 'season', 'year', 'poster_path', 'banner_path',
+        'studio', 'season', 'year', 'poster_path', 'banner_path', 'trailer_url',
         'is_published', 'is_featured', 'views_count',
     ];
 

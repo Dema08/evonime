@@ -19,8 +19,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Dedicated Hero Management Page
     Route::get('hero', function () {
         $animeList = getAnimeData();
-        $heroItems = array_values(array_filter($animeList, fn($a) => !empty($a['trending_rank'])));
-        usort($heroItems, fn($a, $b) => ($a['trending_rank'] ?? 99) <=> ($b['trending_rank'] ?? 99));
+        $heroItems = array_values(array_filter($animeList, fn($a) => !empty($a['is_featured']) || (isset($a['rating']) && (float)$a['rating'] >= 9.0)));
 
         return view('admin.hero', compact('animeList', 'heroItems'));
     })->name('hero');
@@ -45,8 +44,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/health/clear-cache', [HealthController::class, 'clearCache'])->name('health.clear-cache');
     Route::post('/health/migrate', [HealthController::class, 'migrate'])->name('health.migrate');
 
-    // Anime + toggle featured
+    // Anime + toggle featured & hero media
     Route::patch('animes/{anime}/toggle-featured', [AnimeController::class, 'toggleFeatured'])->name('animes.toggle-featured');
+    Route::post('animes/{anime}/hero-media', [AnimeController::class, 'updateHeroMedia'])->name('animes.hero-media');
     Route::resource('animes', AnimeController::class);
 
     // Episode nested di bawah anime (shallow agar edit/update/destroy pakai /episodes/{episode})
