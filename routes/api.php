@@ -41,6 +41,7 @@ Route::prefix('v1')->middleware(['api', 'throttle:api'])->group(function () {
     // 5. Stream Token / URL Generator
     Route::post('/stream/url', [StreamController::class, 'url'])->name('api.v1.stream.url');
     Route::get('/stream/sources/{episodeId}', [StreamController::class, 'sources'])->whereNumber('episodeId')->name('api.v1.stream.sources');
+    Route::post('/stream/resolve-mirror', [StreamController::class, 'resolveMirror'])->name('api.v1.stream.resolve-mirror');
 
     // 6. Authentication (Public)
     Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:auth')->name('api.v1.auth.register');

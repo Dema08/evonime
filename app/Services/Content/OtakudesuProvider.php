@@ -79,12 +79,39 @@ class OtakudesuProvider implements ContentProviderInterface
             }
             $sources = [];
             if (!empty($data['stream_url'])) {
+                $streamUrl = (string) $data['stream_url'];
+                // Cek apakah server mengizinkan embed dari origin aplikasi
+                // (desustream memakai CSP frame-ancestors).
+                $embedCheck = $this->scraper->isEmbeddable($streamUrl);
                 $sources[] = [
-                    'url' => $data['stream_url'], 'quality' => 'default',
-                    'is_m3u8' => str_contains($data['stream_url'], '.m3u8'),
+                    'url' => $streamUrl, 'quality' => 'auto',
+                    'server_name' => 'Server Utama',
+                    'is_m3u8' => str_contains($streamUrl, '.m3u8'),
                     'is_embed' => true, 'provider' => 'otakudesu',
                     'subtitle_type' => 'hardsub', 'default_lang' => 'Indonesia',
+                    'needs_resolve' => false,
+                    'data_content' => null,
+                    'embeddable' => $embedCheck['embeddable'],
+                    'embed_block_reason' => $embedCheck['reason'],
                 ];
+            }
+            // Mirror servers — semua kombinasi kualitas x server (resolve on-demand via API).
+            if (!empty($data['mirrors']) && is_array($data['mirrors'])) {
+                foreach ($data['mirrors'] as $mirror) {
+                    $sources[] = [
+                        'url' => null,
+                        'quality' => $mirror['quality'] ?? 'auto',
+                        'server_name' => $mirror['server'] ?? 'Server',
+                        'data_content' => $mirror['data_content'] ?? null,
+                        'is_m3u8' => false,
+                        'is_embed' => true, 'provider' => 'otakudesu',
+                        'subtitle_type' => 'hardsub', 'default_lang' => 'Indonesia',
+                        'needs_resolve' => true,
+                        // Embeddable baru bisa dipastikan setelah mirror di-resolve.
+                        'embeddable' => null,
+                        'embed_block_reason' => null,
+                    ];
+                }
             }
             $downloadUrls = [];
             foreach (['mp4', 'mkv'] as $format) {

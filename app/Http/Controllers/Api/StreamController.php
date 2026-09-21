@@ -7,8 +7,10 @@ use App\Http\Requests\Api\StreamUrlRequest;
 use App\Http\Responses\ApiResponse;
 use App\Models\Episode;
 use App\Services\Content\ContentAggregatorService;
+use App\Services\Content\OtakudesuScraper;
 use App\Services\StreamTokenService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class StreamController extends Controller
@@ -72,5 +74,35 @@ class StreamController extends Controller
             'navigation'    => $data['navigation'],
             'download_urls' => $data['download_urls'],
         ], 'Sumber streaming Otakudesu.');
+    }
+
+    /**
+     * Resolve mirror server Otakudesu menjadi URL iframe embed.
+     * POST /api/v1/stream/resolve-mirror  Body: { data_content: "base64..." }
+     */
+    public function resolveMirror(Request $request): JsonResponse
+    {
+        $request->validate(['data_content' => 'required|string']);
+
+        $scraper = app(OtakudesuScraper::class);
+        $url = $scraper->resolveMirror($request->input('data_content'));
+
+        if (empty($url)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Server tidak tersedia. Coba server atau kualitas lain.',
+            ], 503);
+        }
+
+        // Beri tahu frontend apakah server ini mengizinkan embed dari origin aplikasi
+        // (banyak mirror memakai X-Frame-Options / CSP frame-ancestors).
+        $embedCheck = $scraper->isEmbeddable($url, $request->getSchemeAndHttpHost());
+
+        return response()->json([
+            'success' => true,
+            'url' => $url,
+            'embeddable' => $embedCheck['embeddable'],
+            'reason' => $embedCheck['reason'],
+        ]);
     }
 }

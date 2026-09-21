@@ -33,9 +33,25 @@
                     <iframe id="player-iframe" 
                             src="" 
                             allowfullscreen
-                            allow="autoplay; encrypted-media; picture-in-picture"
+                            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                            referrerpolicy="no-referrer"
                             class="absolute inset-0 w-full h-full border-0 hidden">
                     </iframe>
+
+                    <!-- Fallback saat embed diblokir (X-Frame-Options / CSP) -->
+                    <div id="iframe-fallback" class="hidden absolute inset-0 z-10 flex-col items-center justify-center gap-3 bg-[#0D0D0D]/95 p-6 text-center">
+                        <p id="iframe-fallback-msg" class="text-xs font-bold text-zinc-300 max-w-lg leading-relaxed">Server ini memblokir embed di situs lain.</p>
+                        <div class="flex flex-wrap items-center justify-center gap-2">
+                            <a id="iframe-open-new-tab" href="#" target="_blank" rel="noopener noreferrer"
+                               class="px-4 py-2 bg-[#E63946] text-white text-xs font-black border-2 border-[#F5F0E6] shadow-[2px_2px_0px_#F5F0E6]">
+                                BUKA DI TAB BARU
+                            </a>
+                            <button id="iframe-retry-btn" type="button"
+                                    class="hidden px-4 py-2 bg-[#1A1A1A] text-[#F5F0E6] text-xs font-black border-2 border-[#F5F0E6] hover:bg-zinc-800">
+                                TETAP COBA
+                            </button>
+                        </div>
+                    </div>
 
                     <!-- HTML5 Video Mode (fallback for m3u8) -->
                     <video id="player-video" 
@@ -134,12 +150,16 @@
                         </div>
                     </div>
 
-                    <!-- Server Selector (single Otakudesu server) -->
+                    <!-- Server Badge (dinamis — update saat ganti server) -->
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="text-xs font-black text-zinc-400 mr-1">SERVER:</span>
-                            <button type="button" class="px-3 py-1.5 bg-[#E63946] text-white text-xs font-black border border-[#F5F0E6] shadow-[1px_1px_0px_#F5F0E6]">Otakudesu</button>
+                            <button id="current-server-badge" type="button" class="px-3 py-1.5 bg-[#E63946] text-white text-xs font-black border border-[#F5F0E6] shadow-[1px_1px_0px_#F5F0E6]">Memuat...</button>
                         </div>
+                        <a id="open-external-btn" href="#" target="_blank" rel="noopener noreferrer"
+                           class="hidden px-3 py-1.5 bg-[#1A1A1A] text-[#F5F0E6] text-xs font-black border border-[#F5F0E6] hover:bg-zinc-800">
+                            BUKA DI TAB BARU ↗
+                        </a>
                     </div>
 
                                         <!-- Player note: quality is controlled inside the iframe; downloads below -->
@@ -150,6 +170,21 @@
                         <span>💡 Ganti kualitas video di dalam player (ikon gear ⚙️). Tombol download tersedia di bawah.</span>
                     </div>
 
+                    <!-- Mirror Selectors: Kualitas x Server (Otakudesu embed) -->
+                    <div id="mirror-selectors" class="hidden download-section border-t border-zinc-800 pt-4">
+                        <div class="selector-group">
+                            <span class="selector-label">Kualitas:</span>
+                            <div class="selector-buttons" id="quality-selector"></div>
+                        </div>
+                        <div class="selector-group">
+                            <span class="selector-label">Server:</span>
+                            <div class="selector-buttons" id="server-selector"></div>
+                        </div>
+                        <div id="player-loading" class="hidden items-center gap-2 text-xs font-bold text-zinc-400 pt-2">
+                            <span class="w-3 h-3 border-2 border-[#E63946] border-t-transparent rounded-full animate-spin inline-block"></span>
+                            Memuat server...
+                        </div>
+                    </div>
                     <!-- Download Section -->
                     <div id="download-section" class="download-section border-t border-zinc-800 pt-4 hidden">
                         <h4 class="text-sm font-black text-[#E63946] mb-2">📥 Unduh Episode Ini</h4>
@@ -230,6 +265,160 @@
             let progressInterval = null;
             let sources = [];
             let downloadUrls = {};
+            let allEmbedSources = [];
+            let currentQuality = 'auto';
+            let currentStreamUrl = '';
+            let currentServerName = null;
+            function updateServerBadge() {
+                const badge = document.getElementById('current-server-badge');
+                if (badge) {
+                    const parts = [];
+                    if (currentServerName) parts.push(currentServerName);
+                    if (currentQuality && currentQuality !== 'auto') parts.push(currentQuality);
+                    badge.textContent = parts.length ? parts.join(' • ') : 'Memuat...';
+                }
+                const ext = document.getElementById('open-external-btn');
+                if (ext) {
+                    if (currentStreamUrl) {
+                        ext.href = currentStreamUrl;
+                        ext.classList.remove('hidden');
+                    } else {
+                        ext.classList.add('hidden');
+                    }
+                }
+            }
+            function markIframeLoaded() {
+                hideIframeFallback();
+            }
+            function hideIframeFallback() {
+                const fallback = document.getElementById('iframe-fallback');
+                const retryBtn = document.getElementById('iframe-retry-btn');
+                if (fallback) fallback.classList.add('hidden');
+                if (retryBtn) retryBtn.classList.add('hidden');
+            }
+            /**
+             * Deteksi iframe embed yang diblokir (X-Frame-Options / CSP frame-ancestors).
+             * Jika frame diblokir, browser menampilkan error-document kosong yang masih
+             * bisa diakses (about:blank) → itulah penanda "blocked".
+             * Akses cross-origin yang normal akan melempar SecurityError → dianggap OK.
+             */
+            function detectIframeBlocked() {
+                try {
+                    const doc = iframe.contentDocument;
+                    if (!doc) return false; // tidak bisa diakses = cross-origin normal
+                    const url = doc.URL || '';
+                    if (url === 'about:blank' || url === '') return true;
+                    if (doc.body && doc.body.innerHTML.trim() === '') return false; // masih loading
+                    return false;
+                } catch (e) {
+                    return false;
+                }
+            }
+            function showIframeFallback(reason, showRetry) {
+                // Tampilkan hanya jika embed diblokir (X-Frame-Options/CSP).
+                if (!isIframeMode) return;
+                const fallback = document.getElementById('iframe-fallback');
+                const msg = document.getElementById('iframe-fallback-msg');
+                const openBtn = document.getElementById('iframe-open-new-tab');
+                const retryBtn = document.getElementById('iframe-retry-btn');
+                if (msg) {
+                    msg.textContent = reason
+                        || 'Server ini memblokir embed di situs lain. Video tetap bisa dibuka di tab baru.';
+                }
+                if (openBtn && currentStreamUrl) openBtn.href = currentStreamUrl;
+                if (retryBtn) retryBtn.classList.toggle('hidden', !showRetry);
+                if (fallback) fallback.classList.remove('hidden');
+            }
+            function initSelectors(embedSources) {
+                allEmbedSources = embedSources || [];
+                const qualities = [...new Set(allEmbedSources.map(s => s.quality).filter(Boolean))];
+                qualities.sort((a, b) => {
+                    if (a === 'auto') return -1;
+                    if (b === 'auto') return 1;
+                    return parseInt(a) - parseInt(b);
+                });
+                const qContainer = document.getElementById('quality-selector');
+                if (!qContainer) return;
+                qContainer.innerHTML = '';
+                qualities.forEach(q => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'selector-btn' + (q === 'auto' ? ' active' : '');
+                    btn.textContent = q === 'auto' ? 'Auto' : q;
+                    btn.onclick = () => selectQuality(q);
+                    qContainer.appendChild(btn);
+                });
+                currentQuality = qualities.length > 0 ? qualities[0] : 'auto';
+                renderServers();
+            }
+            function selectQuality(quality) {
+                currentQuality = quality;
+                document.querySelectorAll('#quality-selector .selector-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.textContent === (quality === 'auto' ? 'Auto' : quality));
+                });
+                renderServers();
+            }
+            function renderServers() {
+                const serversForQuality = allEmbedSources.filter(s => s.quality === currentQuality);
+                const sContainer = document.getElementById('server-selector');
+                if (!sContainer) return;
+                sContainer.innerHTML = '';
+                if (serversForQuality.length === 0) {
+                    sContainer.innerHTML = '<span class="text-xs text-zinc-500">Tidak ada server untuk kualitas ini</span>';
+                    return;
+                }
+                serversForQuality.forEach((source, i) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'selector-btn' + (i === 0 ? ' active' : '');
+                    btn.textContent = source.server_name || ('Server ' + (i + 1));
+                    btn.onclick = () => selectServer(source, btn);
+                    sContainer.appendChild(btn);
+                });
+                selectServer(serversForQuality[0], sContainer.firstElementChild);
+            }
+            async function selectServer(source, buttonEl) {
+                document.querySelectorAll('#server-selector .selector-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                if (buttonEl) buttonEl.classList.add('active');
+                currentServerName = source.server_name || ('Server ' + currentQuality);
+                if (source.quality) currentQuality = source.quality;
+                updateServerBadge();
+                const loadingEl = document.getElementById('player-loading');
+                if (source.needs_resolve && source.data_content) {
+                    if (loadingEl) { loadingEl.classList.remove('hidden'); loadingEl.classList.add('flex'); }
+                    try {
+                        const res = await fetch('/api/v1/stream/resolve-mirror', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') && document.querySelector('meta[name="csrf-token"]').content) || '',
+                            },
+                            body: JSON.stringify({ data_content: source.data_content }),
+                        });
+                        const data = await res.json();
+                        if (data.success && data.url) {
+                            // embeddable=false → server memblokir embed (X-Frame-Options/CSP),
+                            // tetap render + tampilkan fallback "Buka di Tab Baru".
+                            showIframe(data.url, data.embeddable === false ? (data.reason || null) : null);
+                        } else {
+                            alert(data.message || 'Server tidak tersedia. Coba server lain.');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        alert('Gagal memuat server. Coba lagi.');
+                    } finally {
+                        if (loadingEl) { loadingEl.classList.add('hidden'); loadingEl.classList.remove('flex'); }
+                    }
+                } else if (source.url) {
+                    showIframe(
+                        source.url,
+                        source.embeddable === false ? (source.embed_block_reason || null) : null
+                    );
+                }
+            }
 
             function formatTime(seconds) {
                 if (!seconds || isNaN(seconds)) return '00:00';
@@ -244,13 +433,47 @@
                 return match ? match[1] : null;
             }
 
-            function showIframe(url) {
+            function reloadIframe() {
+                if (!currentStreamUrl) return;
+                const url = currentStreamUrl;
+                hideIframeFallback();
+                iframe.setAttribute('src', 'about:blank');
+                window.setTimeout(() => showIframe(url, null), 60);
+            }
+
+            function showIframe(url, blockReason) {
                 isIframeMode = true;
-                iframe.src = url;
+                currentStreamUrl = url;
+                updateServerBadge();
+                iframe.removeAttribute('srcdoc');
+                iframe.setAttribute('src', url);
+                iframe.setAttribute('referrerpolicy', 'no-referrer');
+                iframe.setAttribute(
+                    'allow',
+                    'autoplay; encrypted-media; fullscreen; picture-in-picture'
+                );
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
                 iframe.classList.remove('hidden');
                 video.classList.add('hidden');
                 backdrop.classList.add('hidden');
                 playBtn.classList.add('hidden');
+                hideIframeFallback();
+                const retryBtn = document.getElementById('iframe-retry-btn');
+                if (retryBtn) retryBtn.onclick = reloadIframe;
+                // Server sudah diketahui menolak embed (X-Frame-Options / CSP
+                // frame-ancestors) → tampilkan fallback + tombol buka tab baru.
+                if (blockReason) {
+                    showIframeFallback(blockReason, true);
+                    return;
+                }
+                // Deteksi blokir embed: iframe yang diblokir X-Frame-Options / CSP
+                // frame-ancestors memuat error-document kosong (about:blank).
+                if (showIframe._timer) clearTimeout(showIframe._timer);
+                showIframe._timer = setTimeout(() => {
+                    if (!isIframeMode || !currentStreamUrl) return;
+                    if (detectIframeBlocked()) showIframeFallback(null, true);
+                }, 8000);
             }
 
             function showVideo() {
@@ -407,14 +630,30 @@
                         updateNavButtons(nav);
                         renderDownloadSection();
 
+                        const embedSources = sources.filter(s => s.is_embed);
+                        const mirrorBox = document.getElementById('mirror-selectors');
+                        if (embedSources.length > 1 && mirrorBox) {
+                            mirrorBox.classList.remove('hidden');
+                            initSelectors(embedSources);
+                            return;
+                        }
+                        if (mirrorBox) mirrorBox.classList.add('hidden');
+
                         if (sources.length === 0) {
                             console.warn('No sources returned.');
                             return;
                         }
                         const src = sources[0];
-                        if (src.is_embed) {
-                            showIframe(src.url);
+                        if (src.is_embed && src.url) {
+                            currentServerName = src.server_name || 'Server Utama';
+                            if (src.quality) currentQuality = src.quality;
+                            showIframe(
+                                src.url,
+                                src.embeddable === false ? (src.embed_block_reason || null) : null
+                            );
                         } else if (src.is_m3u8) {
+                            currentServerName = src.server_name || src.provider || null;
+                            updateServerBadge();
                             showVideo();
                             video.src = src.url;
                             if (window.Hls && window.Hls.isSupported()) {

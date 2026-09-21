@@ -3,6 +3,8 @@
 namespace App\Services\Content;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use GuzzleHttp\Cookie\CookieJar;
 use Symfony\Component\DomCrawler\Crawler;
 
 class OtakudesuScraper
@@ -172,6 +174,39 @@ class OtakudesuScraper
                 $dl["mkv"][] = ["resolution" => $resName, "urls" => $urls];
             });
         }
+        // --- Extract SEMUA mirror (kualitas x server) dari .mirrorstream ---
+        // Struktur: <div class="mirrorstream"><ul class="m360p"><li><a data-content="base64">otakuplay</a></li>...
+        // data-content = base64 JSON: {"id":92625,"i":0,"q":"360p"}
+        $mirrors = [];
+        $c->filter('.mirrorstream ul')->each(function (Crawler $ul) use (&$mirrors) {
+            $class = $ul->attr('class') ?? '';
+            if (!preg_match('/m(\d+p)/i', $class, $m)) return;
+            $quality = strtolower($m[1]); // '360p', '480p', '720p'
+            $ul->filter('li a')->each(function (Crawler $a) use (&$mirrors, $quality) {
+                $dataContent = $a->attr('data-content') ?? '';
+                $serverName = trim($a->text());
+                if ($dataContent !== '' && $serverName !== '') {
+                    $mirrors[] = [
+                        'quality' => $quality,
+                        'server' => $serverName,
+                        'data_content' => $dataContent,
+                    ];
+                }
+            });
+        });
+        // Regex fallback kalau DomCrawler gagal (mis. markup tidak standar)
+        if (empty($mirrors) && preg_match_all('/data-content=["\']([^"\']+)["\'][^>]*>([^<]+)</i', $body, $all, PREG_SET_ORDER)) {
+            foreach ($all as $row) {
+                $decoded = json_decode(base64_decode($row[1]), true);
+                if (is_array($decoded) && isset($decoded['q'])) {
+                    $mirrors[] = [
+                        'quality' => strtolower(trim((string) $decoded['q'])),
+                        'server' => trim($row[2]),
+                        'data_content' => $row[1],
+                    ];
+                }
+            }
+        }
         $prev = null; $next = null; $anime = null; $flir = $c->filter(".flir a"); $cnt = $flir->count();
         if ($cnt > 0) {
             $h0 = $flir->eq(0)->attr("href");
@@ -189,6 +224,7 @@ class OtakudesuScraper
         }
         return [
             "stream_url" => $streamUrl,
+            "mirrors" => $mirrors,
             "download_urls" => $dl,
             "has_next_episode" => $next !== null,
             "next_episode" => $next,
@@ -196,5 +232,225 @@ class OtakudesuScraper
             "previous_episode" => $prev,
             "anime" => $anime,
         ];
+    }
+
+    /**
+     * Resolve mirror server Otakudesu (data-content base64 JSON {id,i,q})
+     * menjadi URL iframe embed via admin-ajax.php (2 langkah: nonce + resolve).
+     * Nonce direspons sebagai JSON {"data":"..."} dan kedua request harus
+     * berbagi cookie session yang sama (seperti browser).
+     */
+    public function resolveMirror(string $dataContent): ?string
+    {
+        $decoded = json_decode(base64_decode($dataContent), true);
+        if (!is_array($decoded) || !isset($decoded['id'])) return null;
+
+        try {
+            $jar = new CookieJar();
+            $headers = [
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                'Referer' => 'https://otakudesu.blog/',
+                'X-Requested-With' => 'XMLHttpRequest',
+            ];
+
+            // Step 1: Get nonce (respons JSON {"data":"..."})
+            $nonceRes = Http::timeout(15)
+                ->withOptions(['cookies' => $jar])
+                ->withHeaders($headers)
+                ->asForm()
+                ->post('https://otakudesu.blog/wp-admin/admin-ajax.php', [
+                    'action' => 'aa1208d27f29ca340c92c66d1926f13f',
+                ]);
+            if ($nonceRes->failed()) return null;
+            $nonceJson = json_decode($nonceRes->body(), true);
+            $nonce = is_array($nonceJson) && !empty($nonceJson['data'])
+                ? trim((string) $nonceJson['data'])
+                : trim($nonceRes->body(), " \t\n\r\0\x0B\"'");
+            if ($nonce === '') return null;
+
+            // Step 2: Resolve mirror (respons JSON {"data":"<base64 html>"})
+            $res = Http::timeout(20)
+                ->withOptions(['cookies' => $jar])
+                ->withHeaders($headers)
+                ->asForm()
+                ->post('https://otakudesu.blog/wp-admin/admin-ajax.php', [
+                    'id' => $decoded['id'],
+                    'i' => $decoded['i'] ?? 0,
+                    'q' => $decoded['q'] ?? '480p',
+                    'nonce' => $nonce,
+                    'action' => '2a3505c93b0035d3f455df82bf976b84',
+                ]);
+
+            if ($res->failed()) return null;
+            $resJson = json_decode($res->body(), true);
+            $html = !empty($resJson['data']) ? base64_decode((string) $resJson['data']) : base64_decode($res->body());
+            if (empty($html)) return null;
+
+            $crawler = new Crawler($html);
+            if ($crawler->filter('iframe')->count() > 0) {
+                return $crawler->filter('iframe')->eq(0)->attr('src');
+            }
+            return null;
+        } catch (\Throwable $e) {
+            Log::warning("resolveMirror failed: {$e->getMessage()}");
+            return null;
+        }
+    }
+
+    /**
+     * Cek apakah $url boleh di-load di dalam <iframe> dari origin aplikasi.
+     * Membaca header X-Frame-Options dan Content-Security-Policy frame-ancestors.
+     *
+     * Contoh nyata: desustream.me mengirim
+     *   Content-Security-Policy: frame-ancestors 'self' https://otakudesu.blog ... http://localhost:* http://127.0.0.1:*
+     * sehingga embed hanya tampil kalau Evonime diakses via localhost/127.0.0.1.
+     *
+     * @return array{embeddable: bool, reason: ?string}
+     */
+    public function isEmbeddable(string $url, ?string $appOrigin = null): array
+    {
+        if (trim($url) === '') {
+            return ['embeddable' => false, 'reason' => 'URL embed kosong.'];
+        }
+
+        $target = parse_url($url) ?: [];
+        $targetScheme = strtolower((string) ($target['scheme'] ?? 'https'));
+        $targetHost = strtolower((string) ($target['host'] ?? ''));
+        $targetPort = isset($target['port']) ? (int) $target['port'] : ($targetScheme === 'https' ? 443 : 80);
+
+        $app = parse_url($appOrigin ?: (string) config('app.url', 'http://localhost:8000')) ?: [];
+        $appScheme = strtolower((string) ($app['scheme'] ?? 'http'));
+        $appHost = strtolower((string) ($app['host'] ?? 'localhost'));
+        $appPort = isset($app['port']) ? (int) $app['port'] : ($appScheme === 'https' ? 443 : 80);
+
+        $sameOriginAsTarget = ($appScheme === $targetScheme && $appHost === $targetHost && $appPort === $targetPort);
+
+        try {
+            $headers = [
+                'Referer' => "{$this->b}/",
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            ];
+            $res = Http::timeout(8)->withHeaders($headers)->head($url);
+            if ($res->status() >= 400) {
+                // Sebagian server menolak HEAD — ulangi pakai GET.
+                $res = Http::timeout(10)->withHeaders($headers)->get($url);
+            }
+            $xfo = strtoupper(trim((string) $res->header('X-Frame-Options')));
+            $csp = trim((string) $res->header('Content-Security-Policy'));
+        } catch (\Throwable $e) {
+            // Gagal cek (timeout/network) → fail-open, biarkan browser yang mendeteksi.
+            return ['embeddable' => true, 'reason' => null];
+        }
+
+        if ($xfo !== '') {
+            if (str_contains($xfo, 'DENY')) {
+                return [
+                    'embeddable' => false,
+                    'reason' => 'Server mengirim X-Frame-Options: DENY — embed dilarang di semua situs lain.',
+                ];
+            }
+            if (str_contains($xfo, 'SAMEORIGIN') && ! $sameOriginAsTarget) {
+                return [
+                    'embeddable' => false,
+                    'reason' => 'Server mengirim X-Frame-Options: SAMEORIGIN — hanya boleh di-embed dari domain server itu sendiri.',
+                ];
+            }
+        }
+
+        $frameAncestors = $this->parseFrameAncestors($csp);
+        if ($frameAncestors !== null) {
+            $allowed = false;
+            foreach ($frameAncestors as $source) {
+                if ($source === "'none'") {
+                    $allowed = false;
+                    break;
+                }
+                if ($source === '*') {
+                    $allowed = true;
+                    break;
+                }
+                if ($source === "'self'") {
+                    if ($sameOriginAsTarget) {
+                        $allowed = true;
+                        break;
+                    }
+                    continue;
+                }
+                if ($this->hostSourceMatches($source, $appScheme, $appHost, $appPort)) {
+                    $allowed = true;
+                    break;
+                }
+            }
+
+            if (! $allowed) {
+                return [
+                    'embeddable' => false,
+                    'reason' => 'Server hanya mengizinkan embed dari: '
+                        . implode(' ', $frameAncestors)
+                        . '. Buka Evonime via origin yang diizinkan (mis. http://localhost:8000 / http://127.0.0.1:8000) '
+                        . 'atau gunakan tombol "Buka di Tab Baru".',
+                ];
+            }
+        }
+
+        return ['embeddable' => true, 'reason' => null];
+    }
+
+    /**
+     * Ambil daftar source expression dari direktif frame-ancestors.
+     * Null = direktif tidak ada (tidak ada batasan).
+     *
+     * @return array<int, string>|null
+     */
+    private function parseFrameAncestors(string $csp): ?array
+    {
+        if ($csp === '' || ! preg_match('/frame-ancestors([^;]*)/i', $csp, $m)) {
+            return null;
+        }
+
+        $sources = preg_split('/\s+/', trim($m[1])) ?: [];
+
+        return array_values(array_filter(
+            array_map('trim', $sources),
+            fn (string $s): bool => $s !== ''
+        ));
+    }
+
+    /**
+     * Cocokkan satu CSP host-source (mis. "http://localhost:*", "*.otakudesu.blog")
+     * dengan origin aplikasi.
+     */
+    private function hostSourceMatches(string $source, string $scheme, string $host, int $port): bool
+    {
+        $source = strtolower(trim($source));
+        if ($source === '') {
+            return false;
+        }
+
+        $sourceScheme = null;
+        if (str_contains($source, '://')) {
+            [$sourceScheme, $source] = explode('://', $source, 2);
+        }
+
+        $sourcePort = null;
+        if (preg_match('/^(.*):(\*|\d+)$/', $source, $pm)) {
+            $source = $pm[1];
+            $sourcePort = $pm[2] === '*' ? '*' : (int) $pm[2];
+        }
+
+        if ($sourceScheme !== null && $sourceScheme !== '*' && $sourceScheme !== $scheme) {
+            return false;
+        }
+        if ($sourcePort !== null && $sourcePort !== '*' && (int) $sourcePort !== $port) {
+            return false;
+        }
+        if ($source === '*') {
+            return true;
+        }
+        if (str_starts_with($source, '*.')) {
+            return str_ends_with($host, substr($source, 1)); // ".otakudesu.blog"
+        }
+
+        return $source === $host;
     }
 }
