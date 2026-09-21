@@ -38,18 +38,50 @@
                             class="absolute inset-0 w-full h-full border-0 hidden">
                     </iframe>
 
-                    <!-- Fallback saat embed diblokir (X-Frame-Options / CSP) -->
-                    <div id="iframe-fallback" class="hidden absolute inset-0 z-10 flex-col items-center justify-center gap-3 bg-[#0D0D0D]/95 p-6 text-center">
-                        <p id="iframe-fallback-msg" class="text-xs font-bold text-zinc-300 max-w-lg leading-relaxed">Server ini memblokir embed di situs lain.</p>
-                        <div class="flex flex-wrap items-center justify-center gap-2">
-                            <a id="iframe-open-new-tab" href="#" target="_blank" rel="noopener noreferrer"
-                               class="px-4 py-2 bg-[#E63946] text-white text-xs font-black border-2 border-[#F5F0E6] shadow-[2px_2px_0px_#F5F0E6]">
-                                BUKA DI TAB BARU
-                            </a>
-                            <button id="iframe-retry-btn" type="button"
-                                    class="hidden px-4 py-2 bg-[#1A1A1A] text-[#F5F0E6] text-xs font-black border-2 border-[#F5F0E6] hover:bg-zinc-800">
-                                TETAP COBA
-                            </button>
+                    <!-- Fallback Card UI saat embed diblokir (X-Frame-Options / CSP) -->
+                    <div id="iframe-fallback" class="hidden absolute inset-0 z-30 flex items-center justify-center p-4 bg-[#0D0D0D]/90 backdrop-blur-md select-text">
+                        <div class="relative w-full max-w-lg bg-[#141414] border-2 border-[#E63946] rounded-2xl p-6 md:p-7 shadow-[0_10px_40px_rgba(230,57,70,0.35)] text-center space-y-4">
+                            
+                            <!-- Header Pill Badge -->
+                            <div class="inline-flex items-center gap-2 px-3.5 py-1 bg-[#E63946] text-white text-xs font-black rounded-full border border-[#F5F0E6] shadow-[2px_2px_0px_#F5F0E6] uppercase tracking-wider">
+                                <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                                <span>🎬 PEMBERITAHUAN PEMUTARAN</span>
+                            </div>
+
+                            <!-- Card Title & Clean User Message -->
+                            <div class="space-y-1.5">
+                                <h3 class="text-lg md:text-xl font-black text-[#F5F0E6]" style="font-family: 'Anton', sans-serif;">
+                                    PUTAR VIDEO DI TAB BARU
+                                </h3>
+                                <p id="iframe-fallback-msg" class="text-xs md:text-sm font-bold text-zinc-300 leading-relaxed max-w-md mx-auto">
+                                    Server streaming membatasi pemutaran langsung di dalam iframe. Silakan tonton video ini secara lancar dengan kualitas yang dipilih melalui tab baru.
+                                </p>
+                            </div>
+
+                            <!-- Selected Quality & Server Info Box -->
+                            <div id="iframe-fallback-quality-badge" class="bg-[#1A1A1A] border-2 border-[#F5F0E6] rounded-xl p-3 shadow-[3px_3px_0px_#F5F0E6] flex items-center justify-center gap-3 text-xs font-mono font-bold">
+                                <div class="flex items-center gap-1.5 text-zinc-300">
+                                    <span class="text-zinc-400">Kualitas:</span>
+                                    <span id="fallback-quality-label" class="px-2 py-0.5 bg-[#E63946] text-white rounded font-black text-xs">720p</span>
+                                </div>
+                                <span class="text-zinc-600">•</span>
+                                <div class="flex items-center gap-1.5 text-zinc-300">
+                                    <span class="text-zinc-400">Server:</span>
+                                    <span id="fallback-server-label" class="text-amber-400 font-bold">Otakudesu</span>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+                                <a id="iframe-open-new-tab" href="#" target="_blank" rel="noopener noreferrer"
+                                   class="w-full sm:w-auto px-6 py-3 bg-[#E63946] hover:bg-red-700 text-white text-xs font-black rounded-xl border-2 border-[#F5F0E6] shadow-[4px_4px_0px_#F5F0E6] hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
+                                    <span id="iframe-open-btn-text">BUKA DI TAB BARU</span>
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                        <path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H5v12h12v-6h2v8H3V5h2z"/>
+                                    </svg>
+                                </a>
+                            </div>
+
                         </div>
                     </div>
 
@@ -281,6 +313,8 @@
                 if (ext) {
                     if (currentStreamUrl) {
                         ext.href = currentStreamUrl;
+                        const labelQuality = currentQuality && currentQuality !== 'auto' ? currentQuality : 'VIDEO';
+                        ext.textContent = `BUKA ${labelQuality} DI TAB BARU ↗`;
                         ext.classList.remove('hidden');
                     } else {
                         ext.classList.add('hidden');
@@ -292,9 +326,7 @@
             }
             function hideIframeFallback() {
                 const fallback = document.getElementById('iframe-fallback');
-                const retryBtn = document.getElementById('iframe-retry-btn');
                 if (fallback) fallback.classList.add('hidden');
-                if (retryBtn) retryBtn.classList.add('hidden');
             }
             /**
              * Deteksi iframe embed yang diblokir (X-Frame-Options / CSP frame-ancestors).
@@ -314,20 +346,46 @@
                     return false;
                 }
             }
-            function showIframeFallback(reason, showRetry) {
+            function showIframeFallback(reason) {
                 // Tampilkan hanya jika embed diblokir (X-Frame-Options/CSP).
                 if (!isIframeMode) return;
                 const fallback = document.getElementById('iframe-fallback');
                 const msg = document.getElementById('iframe-fallback-msg');
                 const openBtn = document.getElementById('iframe-open-new-tab');
-                const retryBtn = document.getElementById('iframe-retry-btn');
+                const btnTextSpan = document.getElementById('iframe-open-btn-text');
+                const qLabel = document.getElementById('fallback-quality-label');
+                const sLabel = document.getElementById('fallback-server-label');
+
+                const cleanUserMsg = 'Server streaming membatasi pemutaran langsung di dalam iframe. Silakan buka di tab baru untuk menonton video dengan kualitas terbaik secara lancar.';
+                
                 if (msg) {
-                    msg.textContent = reason
-                        || 'Server ini memblokir embed di situs lain. Video tetap bisa dibuka di tab baru.';
+                    msg.textContent = cleanUserMsg;
                 }
-                if (openBtn && currentStreamUrl) openBtn.href = currentStreamUrl;
-                if (retryBtn) retryBtn.classList.toggle('hidden', !showRetry);
+                const displayQuality = currentQuality && currentQuality !== 'auto' ? currentQuality : 'Auto';
+                if (qLabel) qLabel.textContent = displayQuality;
+                if (sLabel) sLabel.textContent = currentServerName || 'Otakudesu';
+
+                if (openBtn && currentStreamUrl) {
+                    openBtn.href = currentStreamUrl;
+                    if (btnTextSpan) {
+                        btnTextSpan.textContent = `BUKA [${displayQuality}] DI TAB BARU`;
+                    }
+                }
                 if (fallback) fallback.classList.remove('hidden');
+
+                // TAMPILKAN NOTIFIKASI PEMBERITAHUAN MEMBUKA TAB BARU KUALITAS TERPILIH
+                if (window.showToast && currentStreamUrl) {
+                    window.showToast(
+                        `Putar video kualitas ${displayQuality} (${currentServerName || 'Server'}) di tab baru`,
+                        'tab-prompt',
+                        {
+                            text: `BUKA ${displayQuality} ↗`,
+                            url: currentStreamUrl,
+                            target: '_blank'
+                        },
+                        7500
+                    );
+                }
             }
             function initSelectors(embedSources) {
                 allEmbedSources = embedSources || [];
@@ -356,6 +414,9 @@
                 document.querySelectorAll('#quality-selector .selector-btn').forEach(btn => {
                     btn.classList.toggle('active', btn.textContent === (quality === 'auto' ? 'Auto' : quality));
                 });
+                if (window.showToast) {
+                    window.showToast(`Kualitas video diubah ke ${quality === 'auto' ? 'Auto Quality' : quality}`, 'info');
+                }
                 renderServers();
             }
             function renderServers() {
@@ -400,23 +461,59 @@
                         });
                         const data = await res.json();
                         if (data.success && data.url) {
-                            // embeddable=false → server memblokir embed (X-Frame-Options/CSP),
-                            // tetap render + tampilkan fallback "Buka di Tab Baru".
-                            showIframe(data.url, data.embeddable === false ? (data.reason || null) : null);
+                            const isBlocked = data.embeddable === false;
+                            showIframe(data.url, isBlocked ? (data.reason || null) : null);
+
+                            // Notifikasi Pemberitahuan Buka di Tab Baru dengan Kualitas yang Dipilih
+                            if (window.showToast) {
+                                window.showToast(
+                                    `Video ${currentQuality} (${currentServerName}) siap diputar. Tonton di tab baru tanpa kendala.`,
+                                    isBlocked ? 'warning' : 'tab-prompt',
+                                    {
+                                        text: `BUKA ${currentQuality} ↗`,
+                                        url: data.url,
+                                        target: '_blank'
+                                    },
+                                    6500
+                                );
+                            }
                         } else {
-                            alert(data.message || 'Server tidak tersedia. Coba server lain.');
+                            const errMsg = data.message || 'Server streaming tidak merespons. Coba server lain.';
+                            if (window.showToast) {
+                                window.showToast(errMsg, 'error', null, 5000);
+                            } else {
+                                alert(errMsg);
+                            }
                         }
                     } catch (e) {
                         console.error(e);
-                        alert('Gagal memuat server. Coba lagi.');
+                        if (window.showToast) {
+                            window.showToast('Gagal memuat server stream. Coba lagi.', 'error', null, 5000);
+                        } else {
+                            alert('Gagal memuat server. Coba lagi.');
+                        }
                     } finally {
                         if (loadingEl) { loadingEl.classList.add('hidden'); loadingEl.classList.remove('flex'); }
                     }
                 } else if (source.url) {
+                    const isBlocked = source.embeddable === false;
                     showIframe(
                         source.url,
-                        source.embeddable === false ? (source.embed_block_reason || null) : null
+                        isBlocked ? (source.embed_block_reason || null) : null
                     );
+
+                    if (window.showToast) {
+                        window.showToast(
+                            `Video kualitas ${currentQuality} (${currentServerName}) siap. Klik untuk membuka di tab baru.`,
+                            isBlocked ? 'warning' : 'tab-prompt',
+                            {
+                                text: `BUKA ${currentQuality} ↗`,
+                                url: source.url,
+                                target: '_blank'
+                            },
+                            6500
+                        );
+                    }
                 }
             }
 
@@ -459,12 +556,10 @@
                 backdrop.classList.add('hidden');
                 playBtn.classList.add('hidden');
                 hideIframeFallback();
-                const retryBtn = document.getElementById('iframe-retry-btn');
-                if (retryBtn) retryBtn.onclick = reloadIframe;
                 // Server sudah diketahui menolak embed (X-Frame-Options / CSP
                 // frame-ancestors) → tampilkan fallback + tombol buka tab baru.
                 if (blockReason) {
-                    showIframeFallback(blockReason, true);
+                    showIframeFallback(blockReason);
                     return;
                 }
                 // Deteksi blokir embed: iframe yang diblokir X-Frame-Options / CSP
@@ -472,7 +567,7 @@
                 if (showIframe._timer) clearTimeout(showIframe._timer);
                 showIframe._timer = setTimeout(() => {
                     if (!isIframeMode || !currentStreamUrl) return;
-                    if (detectIframeBlocked()) showIframeFallback(null, true);
+                    if (detectIframeBlocked()) showIframeFallback(null);
                 }, 8000);
             }
 

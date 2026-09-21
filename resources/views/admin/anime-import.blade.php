@@ -78,6 +78,78 @@
             </div>
         </div>
 
+        <!-- ===== SUCCESS NOTIFICATION CARD MODAL ===== -->
+        <div x-show="showSuccessCard" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4" 
+             style="display: none;"
+             @click.self="showSuccessCard = false">
+            <div class="relative bg-[#141414] border-4 border-emerald-500 rounded-2xl shadow-[0_0_60px_rgba(16,185,129,0.4)] max-w-md w-full p-8 text-center space-y-5">
+
+                <!-- Close Button -->
+                <button @click="showSuccessCard = false" class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all text-lg">✕</button>
+
+                <!-- Success Icon Ring -->
+                <div class="flex items-center justify-center">
+                    <div class="w-20 h-20 rounded-full bg-emerald-500/15 border-2 border-emerald-500 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                        <svg class="w-10 h-10 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500 text-white text-xs font-black rounded-full uppercase tracking-wider shadow-[2px_2px_0px_#F5F0E6] border border-[#F5F0E6]">
+                    <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                    <span>✅ IMPORT BERHASIL</span>
+                </div>
+
+                <!-- Title & Message -->
+                <div class="space-y-2">
+                    <h2 class="text-2xl font-black text-[#F5F0E6]" style="font-family: 'Anton', sans-serif;">DATABASE DIPERBARUI</h2>
+                    <p class="text-sm font-bold text-zinc-300 leading-relaxed">
+                        Anime <span class="text-amber-400 font-black" x-text="`"${finishedTitle}"`"></span> telah berhasil diimport dan semua episode telah tersimpan ke database.
+                    </p>
+                </div>
+
+                <!-- Stats Box -->
+                <div class="bg-[#1A1A1A] border-2 border-[#F5F0E6] rounded-xl p-4 shadow-[3px_3px_0px_#F5F0E6] flex items-center justify-center gap-6 text-xs font-mono font-bold">
+                    <div class="text-center">
+                        <div class="text-emerald-400 text-xl font-black" x-text="finishedEpisodeCount"></div>
+                        <div class="text-zinc-400 text-[10px] uppercase tracking-wider">Episode</div>
+                    </div>
+                    <div class="w-px h-8 bg-zinc-700"></div>
+                    <div class="text-center">
+                        <div class="text-[#E63946] text-xl font-black">✓</div>
+                        <div class="text-zinc-400 text-[10px] uppercase tracking-wider">Tersimpan</div>
+                    </div>
+                    <div class="w-px h-8 bg-zinc-700"></div>
+                    <div class="text-center">
+                        <div class="text-amber-400 text-xl font-black">DB</div>
+                        <div class="text-zinc-400 text-[10px] uppercase tracking-wider">Database</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+                    <a :href="`/anime/${finishedSlug}`" target="_blank"
+                       class="w-full sm:w-auto px-6 py-3 bg-[#E63946] hover:bg-red-700 text-white text-xs font-black rounded-xl border-2 border-[#F5F0E6] shadow-[4px_4px_0px_#F5F0E6] hover:scale-105 transition-all flex items-center justify-center gap-2">
+                        <span>LIHAT ANIME ↗</span>
+                    </a>
+                    <button @click="showSuccessCard = false"
+                            class="w-full sm:w-auto px-5 py-3 bg-[#1A1A1A] hover:bg-zinc-800 text-[#F5F0E6] text-xs font-black rounded-xl border-2 border-[#F5F0E6] shadow-[2px_2px_0px_#F5F0E6] transition-all">
+                        TUTUP
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 
     @push('scripts')
@@ -98,10 +170,20 @@
                 totalEpisodeCount: 0,
                 currentEpisodeText: '',
                 pollTimer: null,
+                showSuccessCard: false,
+                finishedTitle: '',
+                finishedSlug: '',
+                finishedEpisodeCount: 0,
 
                 get progressPercent() {
                     if (!this.totalEpisodeCount || this.totalEpisodeCount === 0) return 0;
                     return Math.round((this.currentEpisodeCount / this.totalEpisodeCount) * 100);
+                },
+
+                notify(msg, type = 'info', action = null, duration = 4500) {
+                    if (window.showToast) {
+                        window.showToast(msg, type, action, duration);
+                    }
                 },
 
                 async searchAnime() {
@@ -119,9 +201,12 @@
                         });
                         const data = await res.json();
                         this.results = data.results || [];
+                        if (this.results.length === 0) {
+                            this.notify('Tidak ada anime ditemukan untuk pencarian tersebut.', 'warning');
+                        }
                     } catch (e) {
                         console.error(e);
-                        alert('Gagal melakukan pencarian.');
+                        this.notify('Gagal melakukan pencarian. Cek koneksi internet Anda.', 'error');
                     } finally {
                         this.loading = false;
                     }
@@ -145,6 +230,8 @@
                     this.totalEpisodeCount = 0;
                     this.currentEpisodeText = 'Memasukkan ke antrean...';
 
+                    this.notify(`Memulai import "${this.activeTitle}"...`, 'info', null, 3500);
+
                     try {
                         const res = await fetch('{{ route('admin.anime-import.import') }}', {
                             method: 'POST',
@@ -156,14 +243,15 @@
                         });
                         const data = await res.json();
                         if (data.success) {
+                            this.notify('Anime masuk ke antrean. Proses import sedang berjalan...', 'info', null, 4000);
                             this.startPolling(slug);
                         } else {
-                            alert('Gagal memulai import.');
+                            this.notify('Gagal memulai import. Coba lagi.', 'error');
                             this.importing = false;
                         }
                     } catch (e) {
                         console.error(e);
-                        alert('Terjadi kesalahan saat memulai import.');
+                        this.notify('Terjadi kesalahan saat memulai import.', 'error');
                         this.importing = false;
                     }
                 },
@@ -184,12 +272,33 @@
                             if (data.status === 'completed') {
                                 clearInterval(this.pollTimer);
                                 this.importing = false;
-                                alert(`Import anime "${this.activeTitle}" berhasil diselesaikan!`);
+
+                                // Set data untuk Success Card
+                                this.finishedTitle = this.activeTitle;
+                                this.finishedSlug = this.activeSlug;
+                                this.finishedEpisodeCount = data.total || this.totalEpisodeCount;
+
+                                // Tampilkan Success Card modal
+                                this.showSuccessCard = true;
+
+                                // Toast pendamping
+                                this.notify(
+                                    `"${this.activeTitle}" berhasil diimport ke database!`,
+                                    'success',
+                                    {
+                                        text: 'LIHAT ANIME ↗',
+                                        url: `/anime/${this.activeSlug}`,
+                                        target: '_blank'
+                                    },
+                                    8000
+                                );
+
                                 this.searchAnime();
+
                             } else if (data.status === 'failed') {
                                 clearInterval(this.pollTimer);
                                 this.importing = false;
-                                alert(`Import anime "${this.activeTitle}" gagal.`);
+                                this.notify(`Import "${this.activeTitle}" gagal. Coba lagi atau periksa log server.`, 'error', null, 6000);
                             }
                         } catch (e) {
                             console.error(e);

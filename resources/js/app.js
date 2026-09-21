@@ -842,16 +842,77 @@ window.toggleFullscreen = function() {
 /* ==========================================
    9. TOAST NOTIFICATION HELPER
    ========================================== */
-window.showToast = function(msg) {
+window.showToast = function(msg, type = 'info', action = null, duration = 4500) {
     const container = document.getElementById('toast-container');
     if (!container) return;
 
+    // Prevent duplicate toast spam
+    const lastToast = container.lastElementChild;
+    if (lastToast && lastToast.querySelector('.toast-msg-text')?.textContent === msg) return;
+
     const toast = document.createElement('div');
-    toast.className = 'px-4 py-3 bg-[#151515] border border-red-500/60 text-white text-xs font-bold rounded-xl shadow-2xl backdrop-blur-md flex items-center gap-2 transform translate-y-4 opacity-0 transition-all duration-300 pointer-events-auto';
+
+    let borderStyle = 'border-red-500/60';
+    let bgStyle = 'bg-[#151515]/95';
+    let badgeDot = '<span class="w-2.5 h-2.5 rounded-full bg-[#E63946] animate-pulse flex-shrink-0"></span>';
+    let shadowStyle = 'shadow-[0_8px_30px_rgba(230,57,70,0.25)]';
+    let titlePrefix = '';
+
+    if (type === 'error') {
+        borderStyle = 'border-red-600 border-2';
+        bgStyle = 'bg-[#1C0D0D]/95';
+        badgeDot = '<span class="text-red-500 font-bold text-sm flex-shrink-0">❌</span>';
+        shadowStyle = 'shadow-[0_8px_30px_rgba(220,38,38,0.4)]';
+        titlePrefix = '<strong class="text-red-400 mr-1">[ERROR]</strong> ';
+    } else if (type === 'warning') {
+        borderStyle = 'border-amber-500 border-2';
+        bgStyle = 'bg-[#1C160D]/95';
+        badgeDot = '<span class="text-amber-400 font-bold text-sm flex-shrink-0">⚠️</span>';
+        shadowStyle = 'shadow-[0_8px_30px_rgba(245,158,11,0.3)]';
+        titlePrefix = '<strong class="text-amber-400 mr-1">[PERHATIAN]</strong> ';
+    } else if (type === 'success') {
+        borderStyle = 'border-emerald-500 border-2';
+        bgStyle = 'bg-[#0D1C14]/95';
+        badgeDot = '<span class="text-emerald-400 font-bold text-sm flex-shrink-0">✅</span>';
+        shadowStyle = 'shadow-[0_8px_30px_rgba(16,185,129,0.3)]';
+        titlePrefix = '<strong class="text-emerald-400 mr-1">[SUKSES]</strong> ';
+    } else if (type === 'tab-prompt') {
+        borderStyle = 'border-[#E63946] border-2';
+        bgStyle = 'bg-[#121212]/95';
+        badgeDot = '<span class="text-lg flex-shrink-0">🎬</span>';
+        shadowStyle = 'shadow-[4px_4px_0px_#F5F0E6]';
+        titlePrefix = '<strong class="text-[#E63946] mr-1">TAB BARU:</strong> ';
+    }
+
+    toast.className = `px-4 py-3 ${bgStyle} ${borderStyle} text-white text-xs font-bold rounded-xl ${shadowStyle} backdrop-blur-md flex items-center justify-between gap-3 transform translate-y-4 opacity-0 transition-all duration-300 pointer-events-auto min-w-[280px] max-w-lg`;
+
+    let actionBtnHtml = '';
+    if (action && action.text) {
+        const hrefAttr = action.url ? `href="${action.url}"` : 'href="#"';
+        const targetAttr = action.target ? `target="${action.target}"` : 'target="_blank"';
+        actionBtnHtml = `
+            <a ${hrefAttr} ${targetAttr} class="toast-action-btn flex-shrink-0 px-3 py-1.5 bg-[#E63946] hover:bg-red-700 text-white text-[11px] font-black rounded-lg border-2 border-[#F5F0E6] shadow-[2px_2px_0px_#F5F0E6] hover:scale-105 transition-all flex items-center gap-1 cursor-pointer">
+                ${action.text}
+            </a>
+        `;
+    }
+
     toast.innerHTML = `
-        <span class="w-2 h-2 rounded-full bg-red-400"></span>
-        <span>${msg}</span>
+        <div class="flex items-center gap-2.5 min-w-0">
+            ${badgeDot}
+            <span class="toast-msg-text truncate text-zinc-200 leading-snug">${titlePrefix}${msg}</span>
+        </div>
+        ${actionBtnHtml}
     `;
+
+    if (action && action.onClick) {
+        const btn = toast.querySelector('.toast-action-btn');
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                action.onClick(e);
+            });
+        }
+    }
 
     container.appendChild(toast);
 
@@ -860,11 +921,13 @@ window.showToast = function(msg) {
         toast.classList.add('translate-y-0', 'opacity-100');
     }, 10);
 
+    const activeDuration = duration || (action ? 6500 : 4000);
+
     setTimeout(() => {
         toast.classList.remove('translate-y-0', 'opacity-100');
         toast.classList.add('translate-y-4', 'opacity-0');
         setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    }, activeDuration);
 };
 
 /* ==========================================
