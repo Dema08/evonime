@@ -104,9 +104,56 @@ class OtakudesuScraper
     {
         $res = Http::timeout(20)->get("{$this->b}/episode/{$episodeSlug}/");
         if ($res->failed()) return [];
-        $c = new Crawler($res->body());
-        $iframe = $c->filter("iframe#pembed")->count() > 0 ? $c->filter("iframe#pembed") : $c->filter(".responsive-embed iframe");
-        $streamUrl = $iframe->count() > 0 ? $iframe->eq(0)->attr("src") : null;
+        $body = $res->body();
+        $c = new Crawler($body);
+
+        // Iframe player: id="pembed" ada di <div>, bukan <iframe>.
+        // Pakai fallback bertingkat + prioritas desustream/dstream, skip iframe iklan.
+        $streamUrl = null;
+        $selectors = [
+            '#pembed iframe',
+            '.responsive-embed-stream iframe',
+            '.player-embed iframe',
+            'iframe[src*="desustream"]',
+            'iframe[src*="dstream"]',
+        ];
+
+        foreach ($selectors as $sel) {
+            $node = $c->filter($sel);
+            if ($node->count() > 0) {
+                $candidate = $node->eq(0)->attr('src');
+                if (!empty($candidate)) { $streamUrl = $candidate; break; }
+            }
+        }
+
+        // Fallback: cari iframe mana pun yang src-nya desustream/dstream (skip iklan).
+        if (empty($streamUrl)) {
+            $c->filter('iframe')->each(function (Crawler $iframe) use (&$streamUrl) {
+                if (!empty($streamUrl)) return;
+                $src = $iframe->attr('src') ?? '';
+                if ($src !== '' && (str_contains($src, 'desustream') || str_contains($src, 'dstream'))) {
+                    $streamUrl = $src;
+                }
+            });
+        }
+
+        // Fallback terakhir: regex langsung di HTML mentah (paling aman).
+        if (empty($streamUrl)) {
+            if (preg_match('/<iframe[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $body, $m)) {
+                // Jika ada beberapa iframe, prefer yang desustream/dstream.
+                preg_match_all('/<iframe[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $body, $all);
+                $found = $all[1] ?? [];
+                foreach ($found as $src) {
+                    if (str_contains($src, 'desustream') || str_contains($src, 'dstream')) {
+                        $streamUrl = $src;
+                        break;
+                    }
+                }
+                if (empty($streamUrl) && !empty($m[1])) {
+                    $streamUrl = $m[1];
+                }
+            }
+        }
         $dl = ["mp4" => [], "mkv" => []];
         $lists = $c->filter(".download ul");
         if ($lists->count() >= 1) {

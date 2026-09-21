@@ -3,8 +3,8 @@
 namespace App\Providers;
 
 use App\Services\Content\ContentAggregatorService;
-use App\Services\Content\ContentProviderInterface;
 use App\Services\Content\OtakudesuProvider;
+use App\Services\Content\OtakudesuScraper;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -17,13 +17,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(ContentProviderInterface::class . '.otakudesu', function ($app) {
-            return new OtakudesuProvider(config('services.otakudesu.url', 'http://localhost:8080'));
-        });
+        // OtakudesuProvider butuh OtakudesuScraper (object), bukan string URL.
+        // Laravel auto-inject via type-hint constructor, jadi singleton tanpa closure cukup.
+        $this->app->singleton(OtakudesuScraper::class);
+        $this->app->singleton(OtakudesuProvider::class);
 
         $this->app->singleton(ContentAggregatorService::class, function ($app) {
             return new ContentAggregatorService(
-                $app->make(ContentProviderInterface::class . '.otakudesu')
+                $app->make(OtakudesuProvider::class)
             );
         });
     }
