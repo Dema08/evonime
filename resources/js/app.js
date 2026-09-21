@@ -1,3 +1,9 @@
+// Alpine.js — required for admin pages (anime-import) using x-data / x-model / x-for
+import Alpine from 'alpinejs';
+
+window.Alpine = Alpine;
+Alpine.start();
+
 // EVONIME Client-Side Interactive JavaScript Engine
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -35,11 +35,6 @@ return [
         ],
     ],
 
-     'otakudesu' => [
-        'url' => env('OTAKUDESU_URL', 'http://localhost:8080'),
-    ],
-
-
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),

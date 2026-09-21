@@ -54,6 +54,7 @@ class SyncAnimeFromProviders extends Command
             ['slug' => $slug],
             [
                 'title'           => $primaryInfo['title'],
+                'status'          => VideoStatus::mapAnimeStatus($primaryInfo['status'] ?? null),
                 'synopsis'        => $primaryInfo['synopsis'] ?? '',
                 'poster_path'     => $primaryInfo['image'] ?? '',
                 'banner_path'     => $primaryInfo['image'] ?? '',

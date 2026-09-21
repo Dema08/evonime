@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\Admin\AnimeController;
+use App\Http\Controllers\Admin\AnimeImportController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EpisodeController;
 use App\Http\Controllers\Admin\GenreController;
+use App\Http\Controllers\Admin\HealthController;
 use App\Http\Controllers\Admin\StreamSourceController;
 use App\Http\Controllers\Admin\SubtitleController;
 use App\Http\Controllers\Admin\UserController;
@@ -31,6 +33,17 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
         return view('admin.top-rated', compact('animeList', 'topRatedItems'));
     })->name('top-rated');
+
+    // Otakudesu Import
+    Route::get('/anime-import', [AnimeImportController::class, 'index'])->name('anime-import');
+    Route::post('/anime-import/search', [AnimeImportController::class, 'search'])->name('anime-import.search');
+    Route::post('/anime-import/import', [AnimeImportController::class, 'import'])->name('anime-import.import');
+    Route::get('/anime-import/status/{slug}', [AnimeImportController::class, 'status'])->name('anime-import.status');
+
+    // System Health Check
+    Route::get('/health', [HealthController::class, 'index'])->name('health');
+    Route::post('/health/clear-cache', [HealthController::class, 'clearCache'])->name('health.clear-cache');
+    Route::post('/health/migrate', [HealthController::class, 'migrate'])->name('health.migrate');
 
     // Anime + toggle featured
     Route::patch('animes/{anime}/toggle-featured', [AnimeController::class, 'toggleFeatured'])->name('animes.toggle-featured');
