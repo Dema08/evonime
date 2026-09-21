@@ -27,7 +27,7 @@
             <div class="lg:col-span-3 space-y-5">
                 
                 <!-- CUSTOM VIDEO PLAYER CONTAINER -->
-                <div id="video-player-container" class="relative w-full aspect-video bg-[#0D0D0D] rounded-xl overflow-hidden border-2 border-[#F5F0E6] shadow-[6px_6px_0px_#F5F0E6] group select-none">
+                <div id="video-player-container" class="relative w-full aspect-video bg-[#0D0D0D] rounded-xl overflow-hidden border-2 border-[#F5F0E6] shadow-[6px_6px_0px_#F5F0E6] select-none">
                     
                     <!-- Iframe Embed Mode (Otakudesu) -->
                     <iframe id="player-iframe" 
@@ -109,46 +109,6 @@
                         </div>
                     </div>
 
-                    <!-- Video Custom Controls Bar -->
-                    <div class="absolute bottom-0 left-0 right-0 z-20 p-4 bg-[#0D0D0D]/95 border-t-2 border-[#F5F0E6] opacity-95 group-hover:opacity-100 transition-opacity">
-                        
-                        <!-- Progress Bar Seekbar -->
-                        <div class="relative w-full h-2 bg-[#141414] border border-[#F5F0E6] hover:h-3 cursor-pointer transition-all mb-3" id="player-seekbar" onclick="window.seekPlayer(event)">
-                            <div id="player-progress-bar" class="h-full bg-[#E63946] relative" style="width: 0%;">
-                                <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-[#F5F0E6] border border-[#0D0D0D]"></div>
-                            </div>
-                        </div>
-
-                        <!-- Control Icons & Buttons -->
-                        <div class="flex items-center justify-between text-[#F5F0E6]">
-                            
-                            <!-- Left Controls -->
-                            <div class="flex items-center gap-4">
-                                <button type="button" onclick="window.togglePlayState()" aria-label="Play/Pause" class="hover:text-[#E63946] transition-colors">
-                                    <svg id="play-icon" class="w-6 h-6 fill-current" viewBox="0 0 24 24">
-                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                                    </svg>
-                                </button>
-
-                                <!-- Time Display -->
-                                <span class="text-xs font-mono font-bold text-zinc-300">
-                                    <span id="current-time">00:00</span> / <span id="total-time">00:00</span>
-                                </span>
-                            </div>
-
-                            <!-- Right Controls -->
-                            <div class="flex items-center gap-3 text-xs font-bold">
-                                <button type="button" onclick="window.toggleMute()" class="px-2.5 py-1 bg-[#1A1A1A] text-[#F5F0E6] border border-[#F5F0E6] rounded">
-                                    Mute
-                                </button>
-                                <button type="button" onclick="window.toggleFullscreen()" class="px-2.5 py-1 bg-[#1A1A1A] text-[#F5F0E6] border border-[#F5F0E6] rounded">
-                                    Fullscreen
-                                </button>
-                            </div>
-
-                        </div>
-
-                    </div>
                 </div>
 
                 <!-- VIDEO PLAYER CONTROLS & SERVER SELECTOR -->
@@ -286,15 +246,8 @@
             const video = document.getElementById('player-video');
             const backdrop = document.getElementById('player-backdrop-layer');
             const playBtn = document.getElementById('big-play-btn');
-            const playIcon = document.getElementById('play-icon');
-            const seekbar = document.getElementById('player-seekbar');
-            const progressBar = document.getElementById('player-progress-bar');
-            const currentTimeEl = document.getElementById('current-time');
-            const totalTimeEl = document.getElementById('total-time');
 
-            let isPlaying = false;
             let isIframeMode = false;
-            let progressInterval = null;
             let sources = [];
             let downloadUrls = {};
             let allEmbedSources = [];
@@ -517,13 +470,6 @@
                 }
             }
 
-            function formatTime(seconds) {
-                if (!seconds || isNaN(seconds)) return '00:00';
-                const m = Math.floor(seconds / 60);
-                const s = Math.floor(seconds % 60);
-                return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-            }
-
             function slugToEpisodeNumber(slug) {
                 if (!slug) return null;
                 const match = slug.match(/episode-(\d+)/i);
@@ -580,81 +526,6 @@
             function showBackdrop() {
                 backdrop.classList.remove('hidden');
                 playBtn.classList.remove('hidden');
-            }
-
-            function togglePlayState() {
-                if (isIframeMode) {
-                    if (iframe.contentWindow) {
-                        iframe.contentWindow.postMessage({ action: 'toggle' }, '*');
-                    }
-                    if (!isPlaying) {
-                        backdrop.classList.add('hidden');
-                        playBtn.classList.add('hidden');
-                    } else {
-                        showBackdrop();
-                    }
-                    isPlaying = !isPlaying;
-                    updatePlayIcon();
-                    return;
-                }
-
-                if (video.paused) {
-                    video.play();
-                } else {
-                    video.pause();
-                }
-            }
-
-            function updatePlayIcon() {
-                if (isPlaying) {
-                    playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
-                } else {
-                    playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
-                }
-            }
-
-            function toggleMute() {
-                if (isIframeMode) {
-                    if (iframe.contentWindow) {
-                        iframe.contentWindow.postMessage({ action: 'mute' }, '*');
-                    }
-                    return;
-                }
-                video.muted = !video.muted;
-            }
-
-            function toggleFullscreen() {
-                if (isIframeMode) {
-                    if (iframe.requestFullscreen) {
-                        iframe.requestFullscreen();
-                    }
-                    return;
-                }
-                if (video.requestFullscreen) {
-                    video.requestFullscreen();
-                }
-            }
-
-            function seekPlayer(e) {
-                if (isIframeMode) {
-                    return;
-                }
-                const rect = seekbar.getBoundingClientRect();
-                const pct = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-                if (video.duration) {
-                    video.currentTime = pct * video.duration;
-                }
-            }
-
-            function startProgressTracking() {
-                if (progressInterval) clearInterval(progressInterval);
-                progressInterval = setInterval(() => {
-                    if (isIframeMode || video.paused || !video.duration) return;
-                    const pct = (video.currentTime / video.duration) * 100;
-                    progressBar.style.width = pct + '%';
-                    currentTimeEl.textContent = formatTime(video.currentTime);
-                    totalTimeEl.textContent = formatTime(video.duration);
-                }, 500);
             }
 
             function renderDownloadSection() {
@@ -798,34 +669,73 @@
             }
 
             video.addEventListener('play', () => {
-                isPlaying = true;
-                updatePlayIcon();
                 backdrop.classList.add('hidden');
                 playBtn.classList.add('hidden');
-                startProgressTracking();
             });
 
             video.addEventListener('pause', () => {
-                isPlaying = false;
-                updatePlayIcon();
                 showBackdrop();
-                if (progressInterval) clearInterval(progressInterval);
-            });
-
-            video.addEventListener('timeupdate', () => {
-                if (video.duration) {
-                    const pct = (video.currentTime / video.duration) * 100;
-                    progressBar.style.width = pct + '%';
-                    currentTimeEl.textContent = formatTime(video.currentTime);
-                    totalTimeEl.textContent = formatTime(video.duration);
-                }
-            });
-
-            video.addEventListener('loadedmetadata', () => {
-                totalTimeEl.textContent = formatTime(video.duration);
             });
 
             loadSources();
         })();
     </script>
+
+    {{-- Continue Watching (Lanjut Tonton): tracking level-EPISODE --}}
+    {{-- Player memakai iframe pihak ketiga (cross-origin) sehingga --}}
+    {{-- video.currentTime tidak bisa dibaca → progres tidak dikirim dari browser. --}}
+    @push('scripts')
+    <script>
+        (function () {
+            const episodeId = {{ $episodeId ?? 'null' }};
+            const animeSlug = @json($anime['slug'] ?? '');
+            const episodeNumber = {{ (int) ($episodeNum ?? 0) }};
+            const animeTitle = @json($anime['title'] ?? '');
+            const posterUrl = @json($anime['poster'] ?? $anime['banner'] ?? '');
+
+            if (!episodeId) return;
+
+            @auth
+            // User login: catat tontonan lewat route web (session + CSRF).
+            // Endpoint API /api/v1/watch/record tetap ada untuk klien Bearer token;
+            // grup middleware "api" tidak menjalankan sesi browser.
+            fetch(@json(route('watch.record')), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': @json(csrf_token()),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ episode_id: episodeId }),
+                credentials: 'same-origin',
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    return response.json();
+                })
+                .catch(error => console.error('Record watch failed:', error));
+            @else
+            // Guest: simpan riwayat lokal saja (tanpa API)
+            try {
+                const key = 'evonime_watch_history';
+                let history = JSON.parse(localStorage.getItem(key) || '[]');
+                history = history.filter(h => h.episode_id !== episodeId);
+                history.unshift({
+                    episode_id: episodeId,
+                    anime_slug: animeSlug,
+                    anime_title: animeTitle,
+                    episode_number: episodeNumber,
+                    poster_url: posterUrl,
+                    last_watched_at: new Date().toISOString(),
+                });
+                history = history.slice(0, 50);
+                localStorage.setItem(key, JSON.stringify(history));
+            } catch (e) {
+                console.error('LocalStorage error:', e);
+            }
+            @endauth
+        })();
+    </script>
+    @endpush
 </x-app-layout>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -30,6 +31,19 @@ class WatchHistory extends Model
     public function episode(): BelongsTo
     {
         return $this->belongsTo(Episode::class);
+    }
+
+    /**
+     * Anime dari episode yang ditonton.
+     *
+     * Tabel watch_histories tidak menyimpan anime_id (lihat migration
+     * 2025_01_01_000008_create_watch_histories_table), jadi anime diturunkan
+     * dari episode->anime agar tidak ada data denormalized.
+     * Selalu eager load ['episode.anime'] agar tidak N+1.
+     */
+    protected function anime(): Attribute
+    {
+        return Attribute::get(fn (): ?Anime => $this->episode?->anime);
     }
 
     public function progressPercent(): int

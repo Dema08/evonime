@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\RecordWatchRequest;
 use App\Http\Requests\Api\TrackProgressRequest;
 use App\Http\Resources\AnimeListResource;
 use App\Http\Resources\EpisodeResource;
@@ -58,6 +59,28 @@ class WatchController extends Controller
             'progress_seconds' => $progress,
             'duration_seconds' => $duration,
         ], 'Progres menonton berhasil dicatat.');
+    }
+
+    /**
+     * Record an episode as watched — tracking level-EPISODE, bukan timestamp.
+     *
+     * Player iframe pihak ketiga (desustream.me) cross-origin sehingga
+     * currentTime tidak bisa dibaca. Endpoint ini hanya menandai
+     * "episode terakhir yang dibuka" per user.
+     */
+    public function record(RecordWatchRequest $request): JsonResponse
+    {
+        $userId = (int) $request->user()->id;
+        $episodeId = (int) $request->input('episode_id');
+
+        $history = $this->historyService->record($userId, $episodeId);
+
+        return ApiResponse::success([
+            'history_id' => $history->id,
+            'episode_id' => (int) $history->episode_id,
+            'completed' => (bool) $history->completed,
+            'last_watched_at' => $history->last_watched_at?->toIso8601String(),
+        ], 'Tontonan berhasil dicatat.');
     }
 
     /**

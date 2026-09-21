@@ -59,6 +59,7 @@ Route::prefix('v1')->middleware(['api', 'throttle:api'])->group(function () {
         Route::delete('/watch/history/{episodeId}', [WatchController::class, 'destroyHistory'])->whereNumber('episodeId')->name('api.v1.watch.history.destroy');
         Route::get('/watch/{episodeId}', [WatchController::class, 'show'])->whereNumber('episodeId')->name('api.v1.watch.show');
         Route::post('/watch/progress', [WatchController::class, 'track'])->middleware('throttle:progress')->name('api.v1.watch.progress');
+        Route::post('/watch/record', [WatchController::class, 'record'])->name('api.v1.watch.record');
 
         // User Profile & Password
         Route::get('/user/profile', [UserController::class, 'profile'])->name('api.v1.user.profile');

@@ -11,7 +11,7 @@
                 <div class="flex items-center justify-between border-b-2 border-[#F5F0E6] pb-2">
                     <h2 class="text-xl md:text-2xl font-black text-[#F5F0E6] flex items-center gap-2" style="font-family: 'Anton', sans-serif;">
                         <span class="w-2.5 h-5 bg-[#E63946] border border-[#F5F0E6] inline-block"></span>
-                        CONTINUE READING & WATCHING
+                        LANJUT TONTON
                     </h2>
                     <span class="text-xs font-black bg-[#1A1A1A] text-[#F5F0E6] px-2.5 py-1 border-2 border-[#F5F0E6] shadow-[2px_2px_0px_#F5F0E6]">RESUME CHAPTER</span>
                 </div>
@@ -43,7 +43,9 @@
                                 </h3>
                                 <div class="flex items-center justify-between mt-1.5 text-[11px] text-zinc-400 font-extrabold border-t border-zinc-800 pt-1.5">
                                     <span>Episode {{ $cw['continue_ep'] }}</span>
-                                    <span class="text-[#E63946] font-black">{{ $cw['continue_progress'] }}% DONE</span>
+                                    <span class="text-[#E63946] font-black">
+                                        {{ $cw['continue_progress'] > 0 ? $cw['continue_progress'] . '% DONE' : 'LANJUT ▶' }}
+                                    </span>
                                 </div>
                             </div>
                         </div>

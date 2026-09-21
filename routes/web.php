@@ -52,6 +52,56 @@ if (! function_exists('getAnimeData')) {
     }
 }
 
+// Continue Watching (Lanjut Tonton) cards untuk user yang login.
+// Tracking level-EPISODE: player iframe pihak ketiga cross-origin sehingga
+// video.currentTime tidak bisa dibaca, jadi "lanjut" = episode terakhir dibuka.
+if (! function_exists('getContinueWatchingCards')) {
+    function getContinueWatchingCards(int $limit = 6): array
+    {
+        $userId = Auth::id();
+
+        if (! $userId || ! \Illuminate\Support\Facades\Schema::hasTable('watch_histories')) {
+            return [];
+        }
+
+        try {
+            $histories = app(\App\Services\WatchHistoryService::class)->continueWatching($userId, $limit);
+        } catch (\Throwable $e) {
+            return [];
+        }
+
+        $cards = [];
+        $seenAnime = [];
+
+        foreach ($histories as $history) {
+            $anime = $history->anime;   // accessor: episode->anime (sudah eager loaded)
+            $episode = $history->episode;
+
+            if (! $anime || ! $episode) {
+                continue;
+            }
+
+            // 1 kartu per anime: ambil episode terakhir saja (histories sudah
+            // diurutkan last_watched_at DESC, jadi kemunculan pertama = terbaru).
+            if (isset($seenAnime[$anime->slug])) {
+                continue;
+            }
+            $seenAnime[$anime->slug] = true;
+
+            $cards[] = [
+                'slug' => $anime->slug,
+                'title' => $anime->title,
+                'banner' => $anime->banner_url ?: ($anime->poster_url ?: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=1600&auto=format&fit=crop'),
+                'continue_ep' => (int) $episode->episode_number,
+                'continue_progress' => $history->progressPercent(),
+                'last_watched_at' => $history->last_watched_at,
+            ];
+        }
+
+        return $cards;
+    }
+}
+
 // 1. Homepage Route
 Route::get('/', function () {
     $animeList = getAnimeData();
@@ -69,7 +119,7 @@ Route::get('/', function () {
     }
     
     $trendingNow = $animeList;
-    $continueWatching = array_values(array_filter($animeList, fn($a) => isset($a['continue_progress']) && $a['continue_progress'] > 0));
+    $continueWatching = getContinueWatchingCards(6);
     $latestEpisodes = array_slice($animeList, 0, 6);
     $popularAnime = $animeList;
     $recommended = array_slice($animeList, 0, 6);
@@ -185,10 +235,17 @@ Route::get('/watchlist', function () {
     return view('watchlist', compact('animeList'));
 });
 
-// 6. Watch History Page Route
-Route::get('/history', function () {
-    $animeList = getAnimeData();
-    return view('history', compact('animeList'));
+// 6. Watch History Page Route (Lanjut Tonton / riwayat tontonan per user)
+Route::middleware('auth')->group(function () {
+    // Tracking episode dari halaman watch (browser: session + CSRF).
+    // Endpoint API /api/v1/watch/record tetap ada untuk klien Bearer token.
+    Route::post('/watch/record', [\App\Http\Controllers\Web\HistoryController::class, 'record'])->name('watch.record');
+    Route::get('/history', [\App\Http\Controllers\Web\HistoryController::class, 'index'])->name('history');
+    Route::delete('/history', [\App\Http\Controllers\Web\HistoryController::class, 'clear'])->name('history.clear');
+    Route::patch('/history/{id}/complete', [\App\Http\Controllers\Web\HistoryController::class, 'complete'])
+        ->whereNumber('id')->name('history.complete');
+    Route::delete('/history/{id}', [\App\Http\Controllers\Web\HistoryController::class, 'destroy'])
+        ->whereNumber('id')->name('history.destroy');
 });
 
 // 6b. User Profile Page Route
