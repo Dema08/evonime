@@ -184,6 +184,13 @@ Route::get('/history', function () {
     return view('history', compact('animeList'));
 });
 
+// 6b. User Profile Page Route
+Route::get('/profile', function () {
+    $user = Auth::user();
+    $animeList = getAnimeData();
+    return view('profile', compact('user', 'animeList'));
+})->name('profile')->middleware('auth');
+
 // 7. Auth Login Routes
 Route::get('/login', function () {
     if (Auth::check()) {
@@ -215,10 +222,47 @@ Route::post('/login', function (Request $request) {
     ])->onlyInput('email');
 });
 
+// 8. Auth Register Routes
+Route::get('/register', function () {
+    if (Auth::check()) {
+        return redirect('/');
+    }
+    return view('auth.register');
+})->name('register');
+
+Route::post('/register', function (Request $request) {
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+        'password' => ['required', 'string', 'min:8', 'confirmed'],
+    ]);
+
+    $user = \App\Models\User::create([
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+        'role' => 'user',
+        'is_active' => true,
+    ]);
+
+    Auth::login($user);
+    $request->session()->regenerate();
+
+    return redirect()->intended('/');
+});
+
 Route::post('/logout', function (Request $request) {
     Auth::logout();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
     return redirect('/login');
 })->name('logout');
+
+// 9. Google OAuth Routes
+Route::get('/auth/google', [\App\Http\Controllers\AuthController::class, 'redirectToGoogle'])
+    ->name('auth.google');
+
+Route::get('/auth/google/callback', [\App\Http\Controllers\AuthController::class, 'handleGoogleCallback'])
+    ->name('auth.google.callback');
+
 

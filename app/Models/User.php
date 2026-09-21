@@ -18,6 +18,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'google_id',
         'password',
         'role',
         'avatar',
@@ -70,9 +71,15 @@ class User extends Authenticatable
 
     public function avatarUrl(): string
     {
-        return $this->avatar
-            ? Storage::disk('public')->url($this->avatar)
-            : 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=random';
+        if (! $this->avatar) {
+            return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=random';
+        }
+
+        if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
+            return $this->avatar;
+        }
+
+        return Storage::disk('public')->url($this->avatar);
     }
 }
 

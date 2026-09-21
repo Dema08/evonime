@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSearchModal();
     initWatchlistBadge();
     initScheduleTabs();
+    initProfileMenu();
 });
 
 /* ==========================================
@@ -936,4 +937,113 @@ function applyCustomAdminState() {
         console.warn('Error reading custom hero state', e);
     }
 }
+
+/* ==========================================
+   11. PROFILE MENU & MODAL ENGINE
+   ========================================== */
+function initProfileMenu() {
+    // Desktop Dropdown
+    const dropdownBtn = document.getElementById('profile-dropdown-btn');
+    const dropdownMenu = document.getElementById('profile-dropdown-menu');
+    const dropdownChevron = document.getElementById('profile-chevron');
+    const dropdownContainer = document.getElementById('profile-dropdown-container');
+
+    // Mobile Modal
+    const mobileTrigger = document.getElementById('mobile-profile-trigger');
+    const profileModal = document.getElementById('profile-modal');
+    const profileModalBackdrop = document.getElementById('profile-modal-backdrop');
+    const profileModalContent = document.getElementById('profile-modal-content');
+    const profileModalCloseBtn = document.getElementById('profile-modal-close-btn');
+
+    // 1. Desktop Profile Dropdown Toggle
+    if (dropdownBtn && dropdownMenu) {
+        const toggleDropdown = (forceState) => {
+            const isCurrentlyOpen = !dropdownMenu.classList.contains('hidden');
+            const shouldOpen = typeof forceState === 'boolean' ? forceState : !isCurrentlyOpen;
+
+            if (shouldOpen) {
+                dropdownMenu.classList.remove('hidden');
+                dropdownBtn.setAttribute('aria-expanded', 'true');
+                if (dropdownChevron) dropdownChevron.classList.add('rotate-180');
+            } else {
+                dropdownMenu.classList.add('hidden');
+                dropdownBtn.setAttribute('aria-expanded', 'false');
+                if (dropdownChevron) dropdownChevron.classList.remove('rotate-180');
+            }
+        };
+
+        dropdownBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleDropdown();
+        });
+
+        // Close on click outside
+        document.addEventListener('click', (e) => {
+            if (dropdownContainer && !dropdownContainer.contains(e.target)) {
+                toggleDropdown(false);
+            }
+        });
+    }
+
+    // 2. Mobile Profile Modal Handler
+    if (profileModal) {
+        const openModal = () => {
+            profileModal.classList.remove('hidden');
+            profileModal.offsetHeight; // trigger reflow
+            profileModal.classList.remove('opacity-0');
+            profileModal.classList.add('opacity-100');
+            if (profileModalContent) {
+                profileModalContent.classList.remove('translate-y-full', 'md:scale-95');
+                profileModalContent.classList.add('translate-y-0', 'md:scale-100');
+            }
+            document.body.classList.add('overflow-hidden');
+        };
+
+        const closeModal = () => {
+            profileModal.classList.remove('opacity-100');
+            profileModal.classList.add('opacity-0');
+            if (profileModalContent) {
+                profileModalContent.classList.remove('translate-y-0', 'md:scale-100');
+                profileModalContent.classList.add('translate-y-full', 'md:scale-95');
+            }
+            setTimeout(() => {
+                profileModal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }, 300);
+        };
+
+        if (mobileTrigger) {
+            mobileTrigger.addEventListener('click', (e) => {
+                e.preventDefault();
+                openModal();
+            });
+        }
+
+        if (profileModalCloseBtn) {
+            profileModalCloseBtn.addEventListener('click', closeModal);
+        }
+
+        if (profileModalBackdrop) {
+            profileModalBackdrop.addEventListener('click', closeModal);
+        }
+
+        window.openProfileModal = openModal;
+        window.closeProfileModal = closeModal;
+    }
+
+    // 3. Close with Escape Key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (dropdownMenu && !dropdownMenu.classList.contains('hidden')) {
+                dropdownMenu.classList.add('hidden');
+                if (dropdownBtn) dropdownBtn.setAttribute('aria-expanded', 'false');
+                if (dropdownChevron) dropdownChevron.classList.remove('rotate-180');
+            }
+            if (profileModal && !profileModal.classList.contains('hidden')) {
+                if (window.closeProfileModal) window.closeProfileModal();
+            }
+        }
+    });
+}
+
 

@@ -29,6 +29,9 @@
     <!-- Search Modal Overlay -->
     <x-search-overlay />
 
+    <!-- User Profile Modal (Mobile & Tablet) -->
+    <x-profile-modal />
+
     <!-- Toast Notifications -->
     <x-toast />
 
