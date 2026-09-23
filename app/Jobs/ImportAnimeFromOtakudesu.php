@@ -9,6 +9,7 @@ use App\Models\Genre;
 use App\Services\Content\OtakudesuScraper;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -31,6 +32,7 @@ class ImportAnimeFromOtakudesu implements ShouldQueue
             if (empty($info) || empty($info['title'])) {
                 Cache::put("import_progress_{$slug}", ['current' => 0, 'total' => 0, 'status' => 'failed', 'title' => $slug], 3600);
                 Log::error("ImportAnimeFromOtakudesu: Failed to fetch info for slug {$slug}");
+
                 return;
             }
 
@@ -41,7 +43,7 @@ class ImportAnimeFromOtakudesu implements ShouldQueue
             Cache::put("import_progress_{$slug}", ['current' => 0, 'total' => $totalEpisodes, 'status' => 'processing', 'title' => $title], 3600);
 
             $releaseYear = null;
-            if (!empty($info['release_date']) && preg_match('/(\d{4})/', $info['release_date'], $m)) {
+            if (! empty($info['release_date']) && preg_match('/(\d{4})/', $info['release_date'], $m)) {
                 $releaseYear = (int) $m[1];
             }
 
@@ -61,7 +63,7 @@ class ImportAnimeFromOtakudesu implements ShouldQueue
                 ]
             );
 
-            if (!empty($info['genres'])) {
+            if (! empty($info['genres'])) {
                 $genreIds = [];
                 foreach ($info['genres'] as $genreName) {
                     $genre = Genre::firstOrCreate(['slug' => Str::slug($genreName)], ['name' => $genreName]);
@@ -81,11 +83,16 @@ class ImportAnimeFromOtakudesu implements ShouldQueue
                 ], 3600);
 
                 $epSlug = $epData['slug'] ?? '';
-                if (empty($epSlug)) continue;
+                if (empty($epSlug)) {
+                    continue;
+                }
 
                 $episodeNumber = $current;
-                if (preg_match('/episode-(\d+)/i', $epSlug, $m)) $episodeNumber = (int) $m[1];
-                elseif (preg_match('/(\d+)/', $epSlug, $m)) $episodeNumber = (int) $m[0];
+                if (preg_match('/episode-(\d+)/i', $epSlug, $m)) {
+                    $episodeNumber = (int) $m[1];
+                } elseif (preg_match('/(\d+)/', $epSlug, $m)) {
+                    $episodeNumber = (int) $m[0];
+                }
 
                 Episode::updateOrCreate(
                     ['anime_id' => $anime->id, 'external_id_otakudesu' => $epSlug],
@@ -100,6 +107,15 @@ class ImportAnimeFromOtakudesu implements ShouldQueue
                 // Stream sources di-fetch on-demand oleh StreamController saat user buka watch page
             }
 
+            // Otomatis sinkronkan file 1080p dari Google Drive jika diaktifkan di .env
+            if (config('gdrive.enabled', false)) {
+                try {
+                    Artisan::call('anime:sync-gdrive', ['anime' => $anime->slug]);
+                } catch (\Throwable $e) {
+                    Log::info("Auto-sync Google Drive for {$slug} skipped/non-fatal: ".$e->getMessage());
+                }
+            }
+
             Cache::put("import_progress_{$slug}", [
                 'current' => $totalEpisodes,
                 'total' => $totalEpisodes,
@@ -107,7 +123,7 @@ class ImportAnimeFromOtakudesu implements ShouldQueue
                 'title' => $title,
             ], 3600);
         } catch (\Throwable $e) {
-            Log::error("Import failed for {$slug}: " . $e->getMessage(), [
+            Log::error("Import failed for {$slug}: ".$e->getMessage(), [
                 'exception' => $e,
             ]);
             Cache::put("import_progress_{$slug}", [
@@ -126,4 +142,3 @@ class ImportAnimeFromOtakudesu implements ShouldQueue
         return VideoStatus::mapAnimeStatus($otakudesuStatus);
     }
 }
-

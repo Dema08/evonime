@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\Content\ContentAggregatorService;
+use App\Services\Content\GoogleDriveStreamService;
 use App\Services\Content\OtakudesuProvider;
 use App\Services\Content\OtakudesuScraper;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -17,14 +18,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        require_once app_path('Helpers/anime_helpers.php');
+
         // OtakudesuProvider butuh OtakudesuScraper (object), bukan string URL.
         // Laravel auto-inject via type-hint constructor, jadi singleton tanpa closure cukup.
         $this->app->singleton(OtakudesuScraper::class);
         $this->app->singleton(OtakudesuProvider::class);
 
+        $this->app->singleton(GoogleDriveStreamService::class);
         $this->app->singleton(ContentAggregatorService::class, function ($app) {
             return new ContentAggregatorService(
-                $app->make(OtakudesuProvider::class)
+                $app->make(OtakudesuProvider::class),
+                $app->make(GoogleDriveStreamService::class)
             );
         });
     }

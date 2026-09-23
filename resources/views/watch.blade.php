@@ -80,15 +80,26 @@
                                         <path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H5v12h12v-6h2v8H3V5h2z"/>
                                     </svg>
                                 </a>
+                                <button id="iframe-switch-gdrive-btn" type="button" onclick="window.switchProviderTab('google_drive')"
+                                   class="hidden w-full sm:w-auto px-6 py-3 bg-amber-500 hover:bg-amber-600 text-black text-xs font-black rounded-xl border-2 border-[#F5F0E6] shadow-[4px_4px_0px_#F5F0E6] hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
+                                    <span>🌟 PUTAR 1080p DI GOOGLE DRIVE</span>
+                                </button>
+                                <button id="iframe-switch-otaku-btn" type="button" onclick="window.switchProviderTab('otakudesu')"
+                                   class="hidden w-full sm:w-auto px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-[#F5F0E6] text-xs font-black rounded-xl border-2 border-[#F5F0E6] shadow-[4px_4px_0px_#F5F0E6] hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
+                                    <span>⚡ BERALIH KE OTAKUDESU (720p)</span>
+                                </button>
                             </div>
 
                         </div>
                     </div>
 
-                    <!-- HTML5 Video Mode (fallback for m3u8) -->
+                    <!-- HTML5 Video Mode (Localhost Streaming Proxy 1080p & Direct MP4) -->
                     <video id="player-video" 
-                           class="absolute inset-0 w-full h-full hidden" 
-                           playsinline></video>
+                           class="absolute inset-0 w-full h-full hidden z-20 bg-black" 
+                           controls
+                           playsinline
+                           crossorigin="anonymous"
+                           preload="metadata"></video>
 
                     <!-- Poster Backdrop (shown when paused/standby) -->
                     <div id="player-backdrop-layer" class="relative w-full h-full flex items-center justify-center overflow-hidden bg-[#0D0D0D]">
@@ -142,24 +153,50 @@
                         </div>
                     </div>
 
-                    <!-- Server Badge (dinamis — update saat ganti server) -->
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <!-- Dual-Mode Provider Switcher (Google Drive 1080p vs Otakudesu) -->
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-[#141414] p-3.5 rounded-xl border border-zinc-800">
                         <div class="flex flex-wrap items-center gap-2">
-                            <span class="text-xs font-black text-zinc-400 mr-1">SERVER:</span>
-                            <button id="current-server-badge" type="button" class="px-3 py-1.5 bg-[#E63946] text-white text-xs font-black border border-[#F5F0E6] shadow-[1px_1px_0px_#F5F0E6]">Memuat...</button>
+                            <span class="text-xs font-black text-zinc-400 mr-1 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-[#E63946]" fill="currentColor" viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+                                SUMBER STREAM:
+                            </span>
+                            <button id="provider-tab-gdrive" type="button" onclick="window.switchProviderTab('google_drive')"
+                                    class="px-3.5 py-2 rounded-lg text-xs font-black border transition-all flex items-center gap-2 bg-[#1A1A1A] border-zinc-700 text-zinc-400 hover:text-white cursor-pointer">
+                                <span>🌟 Google Drive</span>
+                                <span id="gdrive-badge" class="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 text-[10px] rounded font-mono font-black border border-amber-500/30">1080p FHD</span>
+                            </button>
+                            <button id="provider-tab-otaku" type="button" onclick="window.switchProviderTab('otakudesu')"
+                                    class="px-3.5 py-2 rounded-lg text-xs font-black border transition-all flex items-center gap-2 bg-[#E63946] border-[#F5F0E6] text-white shadow-[2px_2px_0px_#F5F0E6] cursor-pointer">
+                                <span>⚡ Otakudesu</span>
+                                <span class="px-1.5 py-0.5 bg-red-950 text-white text-[10px] rounded font-mono font-bold">360p-720p</span>
+                            </button>
                         </div>
-                        <a id="open-external-btn" href="#" target="_blank" rel="noopener noreferrer"
-                           class="hidden px-3 py-1.5 bg-[#1A1A1A] text-[#F5F0E6] text-xs font-black border border-[#F5F0E6] hover:bg-zinc-800">
-                            BUKA DI TAB BARU ↗
-                        </a>
+
+                        <!-- Current Server Badge -->
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button id="current-server-badge" type="button" class="px-3 py-1.5 bg-[#1A1A1A] text-zinc-300 text-xs font-black border border-zinc-700 rounded-lg">Memuat...</button>
+                        </div>
                     </div>
 
-                                        <!-- Player note: quality is controlled inside the iframe; downloads below -->
-                    <div class="player-note flex items-center gap-2 mt-3 text-[11px] text-zinc-500">
-                        <svg class="w-3.5 h-3.5 text-[#E63946]" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span>💡 Ganti kualitas video di dalam player (ikon gear ⚙️). Tombol download tersedia di bawah.</span>
+                    <!-- Pilihan Resolusi (360p, 480p, 720p, 1080p FHD) -->
+                    <div class="border-t border-zinc-800 pt-4 space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-black text-zinc-300 flex items-center gap-1.5 uppercase tracking-wider">
+                                <svg class="w-4 h-4 text-[#E63946]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                PILIH RESOLUSI:
+                            </span>
+                            <span id="player-mode-badge" class="text-[11px] font-mono text-emerald-400 font-bold bg-emerald-950/40 px-2.5 py-1 rounded border border-emerald-500/40">
+                                Localhost Proxy • 1080p
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2" id="unified-quality-selector">
+                            <button type="button" onclick="window.selectQualityDirect('360p')" class="quality-btn px-3.5 py-1.5 rounded-lg text-xs font-black border transition-all bg-[#141414] border-zinc-700 text-zinc-400 hover:text-white cursor-pointer" data-quality="360p">360p</button>
+                            <button type="button" onclick="window.selectQualityDirect('480p')" class="quality-btn px-3.5 py-1.5 rounded-lg text-xs font-black border transition-all bg-[#141414] border-zinc-700 text-zinc-400 hover:text-white cursor-pointer" data-quality="480p">480p</button>
+                            <button type="button" onclick="window.selectQualityDirect('720p')" class="quality-btn px-3.5 py-1.5 rounded-lg text-xs font-black border transition-all bg-[#141414] border-zinc-700 text-zinc-400 hover:text-white cursor-pointer" data-quality="720p">720p</button>
+                            <button type="button" onclick="window.selectQualityDirect('1080p')" class="quality-btn px-4 py-1.5 rounded-lg text-xs font-black border transition-all bg-[#E63946] border-[#F5F0E6] text-white shadow-[2px_2px_0px_#F5F0E6] cursor-pointer" data-quality="1080p">
+                                🌟 1080p FHD (Local Proxy)
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Mirror Selectors: Kualitas x Server (Otakudesu embed) -->
@@ -236,6 +273,22 @@
 
     </div>
 
+
+    <!-- Native Subtitle Custom Styling for Evonime Web Player -->
+    <style>
+        video::cue {
+            background-color: rgba(10, 10, 10, 0.82) !important;
+            color: #FFFFFF !important;
+            font-family: 'Inter', -apple-system, sans-serif !important;
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
+            line-height: 1.4 !important;
+            text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.95), 0 0 2px #000 !important;
+            padding: 2px 8px !important;
+            border-radius: 4px !important;
+        }
+    </style>
+
     <!-- Player JavaScript -->
     <script>
         (function () {
@@ -249,11 +302,152 @@
 
             let isIframeMode = false;
             let sources = [];
+            let providersData = { google_drive: [], otakudesu: [], local: [] };
+            let hasGoogleDrive = false;
+            let hasOtakudesu = false;
+            let currentProvider = 'google_drive';
+            let currentSubtitles = [];
             let downloadUrls = {};
             let allEmbedSources = [];
             let currentQuality = 'auto';
             let currentStreamUrl = '';
             let currentServerName = null;
+
+            window.playLocalProxy1080p = function () {
+                if (!hasGoogleDrive || !providersData.google_drive || providersData.google_drive.length === 0) {
+                    if (window.showToast) {
+                        window.showToast('Sumber Google Drive 1080p belum tersedia untuk episode ini. Memutar via Otakudesu.', 'warning');
+                    }
+                    return;
+                }
+                const gdrive = providersData.google_drive[0];
+                const proxyUrl = gdrive.proxy_url || ('/stream/' + animeSlug + '/' + episodeNumber + '/1080p');
+
+                currentProvider = 'google_drive';
+                currentQuality = '1080p';
+                currentServerName = 'Localhost Proxy (1080p FHD)';
+                currentStreamUrl = proxyUrl;
+
+                updateProviderTabUI('google_drive');
+                updateQualityButtonUI('1080p');
+                updateServerBadge();
+
+                // Sembunyikan mirror Otakudesu & iframe
+                const mirrorBox = document.getElementById('mirror-selectors');
+                if (mirrorBox) mirrorBox.classList.add('hidden');
+                iframe.classList.add('hidden');
+                hideIframeFallback();
+
+                // Tampilkan HTML5 Video Player
+                video.classList.remove('hidden');
+                video.controls = true;
+                backdrop.classList.add('hidden');
+                playBtn.classList.add('hidden');
+
+                // Muat URL localhost streaming proxy ke HTML5 video
+                const fullProxyUrl = proxyUrl.startsWith('http') ? proxyUrl : (window.location.origin + proxyUrl);
+                if (video.src !== fullProxyUrl && video.src !== proxyUrl) {
+                    video.src = proxyUrl;
+                    video.load();
+                }
+
+                // Pasang subtitle WebVTT ke HTML5 video jika tersedia
+                const oldTracks = video.querySelectorAll('track');
+                oldTracks.forEach(t => t.remove());
+
+                if (currentSubtitles && currentSubtitles.length > 0) {
+                    currentSubtitles.forEach(sub => {
+                        const track = document.createElement('track');
+                        track.kind = 'subtitles';
+                        track.label = sub.label || 'Indonesia';
+                        track.srclang = sub.language || 'id';
+                        track.src = sub.url;
+                        if (sub.is_default) {
+                            track.default = true;
+                        }
+                        video.appendChild(track);
+                    });
+                }
+
+                video.play().catch(e => console.log('Autoplay deferred until user interaction:', e));
+
+                const modeBadge = document.getElementById('player-mode-badge');
+                if (modeBadge) {
+                    modeBadge.textContent = 'Localhost Proxy • 1080p FHD';
+                    modeBadge.className = 'text-[11px] font-mono text-emerald-400 font-bold bg-emerald-950/40 px-2.5 py-1 rounded border border-emerald-500/40';
+                }
+
+                if (window.showToast) {
+                    window.showToast('Memutar 1080p FHD via Localhost Streaming Proxy (Google Drive Storage)', 'success');
+                }
+            };
+
+            window.selectQualityDirect = function (quality) {
+                if (quality === '1080p') {
+                    window.playLocalProxy1080p();
+                } else {
+                    // Hentikan HTML5 video jika sedang main
+                    video.pause();
+                    video.classList.add('hidden');
+
+                    currentProvider = 'otakudesu';
+                    updateProviderTabUI('otakudesu');
+                    updateQualityButtonUI(quality);
+
+                    const modeBadge = document.getElementById('player-mode-badge');
+                    if (modeBadge) {
+                        modeBadge.textContent = `Otakudesu CDN (${quality})`;
+                        modeBadge.className = 'text-[11px] font-mono text-zinc-400 font-bold bg-[#141414] px-2.5 py-1 rounded border border-zinc-800';
+                    }
+
+                    // Tampilkan selector Otakudesu dan pilih kualitas
+                    const mirrorBox = document.getElementById('mirror-selectors');
+                    if (mirrorBox) mirrorBox.classList.remove('hidden');
+
+                    selectQuality(quality);
+                }
+            };
+
+            function updateQualityButtonUI(activeQuality) {
+                document.querySelectorAll('.quality-btn').forEach(btn => {
+                    const q = btn.getAttribute('data-quality');
+                    if (q === activeQuality) {
+                        btn.className = 'quality-btn px-3.5 py-1.5 rounded-lg text-xs font-black border transition-all bg-[#E63946] border-[#F5F0E6] text-white shadow-[2px_2px_0px_#F5F0E6] cursor-pointer';
+                    } else {
+                        btn.className = 'quality-btn px-3 py-1.5 rounded-lg text-xs font-black border transition-all bg-[#141414] border-zinc-700 text-zinc-400 hover:text-white cursor-pointer';
+                    }
+                });
+            }
+
+            window.switchProviderTab = function (provider) {
+                if (provider === 'google_drive') {
+                    window.playLocalProxy1080p();
+                } else {
+                    window.selectQualityDirect('720p');
+                }
+            };
+
+            function updateProviderTabUI(activeProvider) {
+                const tabGDrive = document.getElementById('provider-tab-gdrive');
+                const tabOtaku = document.getElementById('provider-tab-otaku');
+
+                if (tabGDrive) {
+                    if (activeProvider === 'google_drive') {
+                        tabGDrive.className = 'px-3.5 py-2 rounded-lg text-xs font-black border transition-all flex items-center gap-2 bg-[#E63946] border-[#F5F0E6] text-white shadow-[2px_2px_0px_#F5F0E6] cursor-pointer';
+                    } else {
+                        tabGDrive.className = 'px-3.5 py-2 rounded-lg text-xs font-black border transition-all flex items-center gap-2 bg-[#1A1A1A] border-zinc-700 text-zinc-400 hover:text-white cursor-pointer';
+                    }
+                }
+
+                if (tabOtaku) {
+                    if (activeProvider === 'otakudesu') {
+                        tabOtaku.className = 'px-3.5 py-2 rounded-lg text-xs font-black border transition-all flex items-center gap-2 bg-[#E63946] border-[#F5F0E6] text-white shadow-[2px_2px_0px_#F5F0E6] cursor-pointer';
+                    } else {
+                        tabOtaku.className = 'px-3.5 py-2 rounded-lg text-xs font-black border transition-all flex items-center gap-2 bg-[#1A1A1A] border-zinc-700 text-zinc-400 hover:text-white cursor-pointer';
+                    }
+                }
+            }
+
             function updateServerBadge() {
                 const badge = document.getElementById('current-server-badge');
                 if (badge) {
@@ -261,17 +455,6 @@
                     if (currentServerName) parts.push(currentServerName);
                     if (currentQuality && currentQuality !== 'auto') parts.push(currentQuality);
                     badge.textContent = parts.length ? parts.join(' • ') : 'Memuat...';
-                }
-                const ext = document.getElementById('open-external-btn');
-                if (ext) {
-                    if (currentStreamUrl) {
-                        ext.href = currentStreamUrl;
-                        const labelQuality = currentQuality && currentQuality !== 'auto' ? currentQuality : 'VIDEO';
-                        ext.textContent = `BUKA ${labelQuality} DI TAB BARU ↗`;
-                        ext.classList.remove('hidden');
-                    } else {
-                        ext.classList.add('hidden');
-                    }
                 }
             }
             function markIframeLoaded() {
@@ -324,6 +507,26 @@
                         btnTextSpan.textContent = `BUKA [${displayQuality}] DI TAB BARU`;
                     }
                 }
+                // Atur tombol fallback switch antar provider (Otakudesu <-> Google Drive)
+                const switchGdriveBtn = document.getElementById('iframe-switch-gdrive-btn');
+                const switchOtakuBtn = document.getElementById('iframe-switch-otaku-btn');
+
+                if (switchGdriveBtn) {
+                    if (currentProvider !== 'google_drive' && hasGoogleDrive) {
+                        switchGdriveBtn.classList.remove('hidden');
+                    } else {
+                        switchGdriveBtn.classList.add('hidden');
+                    }
+                }
+
+                if (switchOtakuBtn) {
+                    if (currentProvider === 'google_drive' && hasOtakudesu) {
+                        switchOtakuBtn.classList.remove('hidden');
+                    } else {
+                        switchOtakuBtn.classList.add('hidden');
+                    }
+                }
+
                 if (fallback) fallback.classList.remove('hidden');
 
                 // TAMPILKAN NOTIFIKASI PEMBERITAHUAN MEMBUKA TAB BARU KUALITAS TERPILIH
@@ -591,47 +794,65 @@
                             return;
                         }
                         sources = data.data.sources || [];
+                        providersData = data.data.providers || { google_drive: [], otakudesu: [], local: [] };
+                        currentSubtitles = data.data.subtitles || [];
                         downloadUrls = data.data.download_urls || {};
                         const nav = data.data.navigation || {};
                         updateNavButtons(nav);
                         renderDownloadSection();
 
-                        const embedSources = sources.filter(s => s.is_embed);
-                        const mirrorBox = document.getElementById('mirror-selectors');
-                        if (embedSources.length > 1 && mirrorBox) {
-                            mirrorBox.classList.remove('hidden');
-                            initSelectors(embedSources);
-                            return;
-                        }
-                        if (mirrorBox) mirrorBox.classList.add('hidden');
+                        hasGoogleDrive = Boolean(data.data.has_gdrive && providersData.google_drive && providersData.google_drive.length > 0);
+                        hasOtakudesu = Boolean(data.data.has_otakudesu || (providersData.otakudesu && providersData.otakudesu.length > 0));
 
-                        if (sources.length === 0) {
-                            console.warn('No sources returned.');
-                            return;
+                        // Perbarui status dan tampilan tombol tab Google Drive
+                        const tabGDrive = document.getElementById('provider-tab-gdrive');
+                        const gdriveBadge = document.getElementById('gdrive-badge');
+                        if (tabGDrive) {
+                            if (hasGoogleDrive) {
+                                tabGDrive.classList.remove('opacity-40', 'cursor-not-allowed');
+                                tabGDrive.classList.add('cursor-pointer');
+                                if (gdriveBadge) {
+                                    gdriveBadge.textContent = '1080p FHD';
+                                    gdriveBadge.className = 'px-1.5 py-0.5 bg-amber-500/20 text-amber-300 text-[10px] rounded font-mono font-black border border-amber-500/30';
+                                }
+                            } else {
+                                tabGDrive.classList.add('opacity-40', 'cursor-not-allowed');
+                                tabGDrive.classList.remove('cursor-pointer');
+                                if (gdriveBadge) {
+                                    gdriveBadge.textContent = 'Belum Ada';
+                                    gdriveBadge.className = 'px-1.5 py-0.5 bg-zinc-800 text-zinc-500 text-[10px] rounded font-mono font-bold';
+                                }
+                            }
                         }
-                        const src = sources[0];
-                        if (src.is_embed && src.url) {
-                            currentServerName = src.server_name || 'Server Utama';
-                            if (src.quality) currentQuality = src.quality;
-                            showIframe(
-                                src.url,
-                                src.embeddable === false ? (src.embed_block_reason || null) : null
-                            );
-                        } else if (src.is_m3u8) {
-                            currentServerName = src.server_name || src.provider || null;
+
+                        // JIKA ADA GOOGLE DRIVE 1080p: JADIKAN SUMBER UTAMA DEFAULT!
+                        if (hasGoogleDrive) {
+                            window.switchProviderTab('google_drive');
+                        } else if (hasOtakudesu) {
+                            window.switchProviderTab('otakudesu');
+                        } else if (sources.length > 0) {
+                            const src = sources[0];
+                            currentServerName = src.server_name || 'Server';
+                            currentQuality = src.quality || 'auto';
                             updateServerBadge();
-                            showVideo();
-                            video.src = src.url;
-                            if (window.Hls && window.Hls.isSupported()) {
-                                const hls = new window.Hls();
-                                hls.loadSource(src.url);
-                                hls.attachMedia(video);
-                            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                            if (src.is_embed && src.url) {
+                                showIframe(src.url, src.embeddable === false ? (src.embed_block_reason || null) : null);
+                            } else if (src.is_m3u8) {
+                                showVideo();
+                                video.src = src.url;
+                                if (window.Hls && window.Hls.isSupported()) {
+                                    const hls = new window.Hls();
+                                    hls.loadSource(src.url);
+                                    hls.attachMedia(video);
+                                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                                    video.src = src.url;
+                                }
+                            } else {
+                                showVideo();
                                 video.src = src.url;
                             }
                         } else {
-                            showVideo();
-                            video.src = src.url;
+                            console.warn('Tidak ada sumber streaming untuk episode ini.');
                         }
                     })
                     .catch(err => {

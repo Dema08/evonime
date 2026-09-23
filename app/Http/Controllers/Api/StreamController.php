@@ -47,7 +47,7 @@ class StreamController extends Controller
     }
 
     /**
-     * Get streaming sources for an episode from Otakudesu.
+     * Get streaming sources for an episode from Google Drive & Otakudesu.
      */
     public function sources(int $episodeId): JsonResponse
     {
@@ -64,16 +64,19 @@ class StreamController extends Controller
 
         return ApiResponse::success([
             'episode' => [
-                'id'                   => $episode->id,
-                'episode_number'       => $episode->episode_number,
-                'title'                => $episode->title,
+                'id' => $episode->id,
+                'episode_number' => $episode->episode_number,
+                'title' => $episode->title,
                 'external_id_otakudesu' => $episode->external_id_otakudesu,
             ],
-            'sources'       => $data['sources'],
-            'subtitles'     => $data['subtitles'],
-            'navigation'    => $data['navigation'],
+            'sources' => $data['sources'],
+            'providers' => $data['providers'] ?? [],
+            'subtitles' => $data['subtitles'],
+            'navigation' => $data['navigation'],
             'download_urls' => $data['download_urls'],
-        ], 'Sumber streaming Otakudesu.');
+            'has_gdrive' => $data['has_gdrive'] ?? false,
+            'has_otakudesu' => $data['has_otakudesu'] ?? false,
+        ], 'Sumber streaming berhasil dimuat (Dual-Mode: Otakudesu + Google Drive).');
     }
 
     /**
